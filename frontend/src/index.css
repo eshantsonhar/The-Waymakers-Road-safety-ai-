@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   RoadSoS Global Styles - Futuristic Emergency Operations Center
+   ============================================================ */
+
+:root {
+  --sos-bg: #0a0e1a;
+  --sos-surface: #0f1629;
+  --sos-card: #141d35;
+  --sos-border: #1e2d4a;
+  --sos-red: #ff2d55;
+  --sos-amber: #ff9500;
+  --sos-cyan: #00d4ff;
+  --sos-green: #30d158;
+  --sos-purple: #bf5af2;
+  --sos-text: #e8eaf6;
+  --sos-text-dim: #8892b0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  background-color: var(--sos-bg);
+  color: var(--sos-text);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--sos-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sos-border);
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sos-cyan);
+}
+
+/* Leaflet map dark theme overrides */
+.leaflet-container {
+  background: #0a0e1a !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+.leaflet-tile {
+  filter: brightness(0.6) saturate(0.8) hue-rotate(180deg) invert(1) !important;
+}
+
+.leaflet-control-zoom a {
+  background: #141d35 !important;
+  color: #00d4ff !important;
+  border-color: #1e2d4a !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: #1e2d4a !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: #141d35 !important;
+  color: #e8eaf6 !important;
+  border: 1px solid #1e2d4a !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6) !important;
+}
+
+.leaflet-popup-tip {
+  background: #141d35 !important;
+}
+
+/* Custom incident marker pulse */
+.incident-marker-critical {
+  animation: pulse-red-marker 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-red-marker {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+/* Glowing text effect */
+.text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.6), 0 0 20px rgba(0, 212, 255, 0.3);
+}
+
+.text-glow-red {
+  text-shadow: 0 0 10px rgba(255, 45, 85, 0.6), 0 0 20px rgba(255, 45, 85, 0.3);
+}
+
+.text-glow-amber {
+  text-shadow: 0 0 10px rgba(255, 149, 0, 0.6), 0 0 20px rgba(255, 149, 0, 0.3);
+}
+
+/* Card glow borders */
+.card-glow-red {
+  box-shadow: 0 0 0 1px rgba(255, 45, 85, 0.3), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.card-glow-cyan {
+  box-shadow: 0 0 0 1px rgba(0, 212, 255, 0.3), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.card-glow-amber {
+  box-shadow: 0 0 0 1px rgba(255, 149, 0, 0.3), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Scan line overlay effect */
+.scan-overlay::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.3), transparent);
+  animation: scan-line 4s linear infinite;
+  pointer-events: none;
+}
+
+/* Status indicator dots */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.active {
+  background: var(--sos-green);
+  box-shadow: 0 0 6px var(--sos-green);
+  animation: blink 2s ease-in-out infinite;
+}
+
+.status-dot.critical {
+  background: var(--sos-red);
+  box-shadow: 0 0 6px var(--sos-red);
+  animation: blink 0.8s ease-in-out infinite;
+}
+
+.status-dot.warning {
+  background: var(--sos-amber);
+  box-shadow: 0 0 6px var(--sos-amber);
+}
+
+/* Grid background pattern */
+.bg-grid {
+  background-image: linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Severity badge colors */
+.severity-critical { @apply bg-red-900/40 text-red-400 border border-red-500/30; }
+.severity-high { @apply bg-orange-900/40 text-orange-400 border border-orange-500/30; }
+.severity-medium { @apply bg-amber-900/40 text-amber-400 border border-amber-500/30; }
+.severity-low { @apply bg-green-900/40 text-green-400 border border-green-500/30; }
+
+/* Recharts dark theme */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #1e2d4a !important;
+}
+
+.recharts-text {
+  fill: #8892b0 !important;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: #141d35 !important;
+  border: 1px solid #1e2d4a !important;
+  border-radius: 8px !important;
+}

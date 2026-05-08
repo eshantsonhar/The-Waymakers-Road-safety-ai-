@@ -1,0 +1,251 @@
+# ============================================================
+# RoadSoS - Comprehensive .gitignore
+# ============================================================
+
+# ============================================================
+# KIRO IDE - MUST IGNORE
+# ============================================================
+.kiro/
+.kiro/**
+**/.kiro/
+**/.kiro/**
+
+# ============================================================
+# Environment Variables & Secrets
+# ============================================================
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+*.env
+secrets/
+credentials/
+*.pem
+*.key
+*.cert
+*.crt
+*.p12
+*.pfx
+api_keys.txt
+secrets.json
+config.secret.*
+
+# ============================================================
+# Python
+# ============================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+pytestdebug.log
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+cython_debug/
+venv/
+env/
+ENV/
+.venv/
+.env/
+virtualenv/
+
+# ============================================================
+# Node.js / Frontend
+# ============================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.stylelintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.parcel-cache
+.next/
+out/
+.nuxt/
+dist/
+.cache/
+.vuepress/dist
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.vscode-test
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# ============================================================
+# Build Artifacts
+# ============================================================
+frontend/dist/
+frontend/build/
+backend/dist/
+*.min.js
+*.min.css
+*.bundle.js
+*.chunk.js
+
+# ============================================================
+# Docker
+# ============================================================
+docker/volumes/
+docker/data/
+postgres_data/
+pgdata/
+*.dockerignore.local
+
+# ============================================================
+# Database
+# ============================================================
+*.sql.gz
+*.dump
+*.db
+*.sqlite
+*.sqlite3
+db_backups/
+database_dumps/
+
+# ============================================================
+# Logs
+# ============================================================
+logs/
+*.log
+*.log.*
+log/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# ============================================================
+# OS Generated
+# ============================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# ============================================================
+# IDEs and Editors
+# ============================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+*.iml
+*.ipr
+*.iws
+.factorypath
+
+# ============================================================
+# ML Models & Large Files
+# ============================================================
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.model
+*.bin
+models/trained/
+datasets/raw/
+datasets/processed/
+*.csv.gz
+*.parquet
+
+# ============================================================
+# Temporary Files
+# ============================================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+
+# ============================================================
+# Testing
+# ============================================================
+.pytest_cache/
+test-results/
+coverage/
+.nyc_output/
+junit.xml
+test_output/
+
+# ============================================================
+# Jupyter Notebooks (checkpoints)
+# ============================================================
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ============================================================
+# Documentation Build
+# ============================================================
+docs/_build/
+docs/site/
+site/

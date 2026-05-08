@@ -1,0 +1,113 @@
+version: '3.9'
+
+services:
+  # ============================================================
+  # PostgreSQL + PostGIS Database
+  # ============================================================
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: roadsos_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: roadsos_db
+      POSTGRES_USER: roadsos
+      POSTGRES_PASSWORD: roadsos_secret
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U roadsos -d roadsos_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - roadsos_net
+
+  # ============================================================
+  # FastAPI Backend
+  # ============================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: roadsos_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://roadsos:roadsos_secret@db:5432/roadsos_db
+      DATABASE_URL_SYNC: postgresql://roadsos:roadsos_secret@db:5432/roadsos_db
+      DEMO_MODE: "true"
+      DEBUG: "true"
+      SECRET_KEY: roadsos-dev-secret-key-change-in-production-2024
+      ALLOWED_ORIGINS: '["http://localhost:5173","http://localhost:3000","http://localhost:80","http://localhost"]'
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    networks:
+      - roadsos_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ============================================================
+  # React Frontend (Vite Dev Server)
+  # ============================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: roadsos_frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:8000
+      VITE_WS_URL: ws://localhost:8000
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - roadsos_net
+
+  # ============================================================
+  # Database Seeder (runs once)
+  # ============================================================
+  seeder:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: roadsos_seeder
+    command: python scripts/seed.py
+    environment:
+      DATABASE_URL: postgresql+asyncpg://roadsos:roadsos_secret@db:5432/roadsos_db
+      DATABASE_URL_SYNC: postgresql://roadsos:roadsos_secret@db:5432/roadsos_db
+      DEMO_MODE: "true"
+    depends_on:
+      db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - ./scripts:/app/scripts
+    networks:
+      - roadsos_net
+    restart: "no"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  roadsos_net:
+    driver: bridge
