@@ -3,8 +3,12 @@
 // ============================================================
 
 export type SeverityLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-export type IncidentStatus = 'DETECTED' | 'CONFIRMED' | 'DISPATCHED' | 'EN_ROUTE' | 'ON_SCENE' | 'TRANSPORTING' | 'RESOLVED' | 'FALSE_ALARM';
-export type AmbulanceStatus = 'AVAILABLE' | 'DISPATCHED' | 'EN_ROUTE_TO_SCENE' | 'ON_SCENE' | 'TRANSPORTING' | 'AT_HOSPITAL' | 'RETURNING' | 'OFFLINE' | 'MAINTENANCE';
+export type IncidentStatus =
+  | 'DETECTED' | 'CONFIRMED' | 'DISPATCHED' | 'EN_ROUTE'
+  | 'ON_SCENE' | 'TRANSPORTING' | 'RESOLVED' | 'FALSE_ALARM';
+export type AmbulanceStatus =
+  | 'AVAILABLE' | 'DISPATCHED' | 'EN_ROUTE_TO_SCENE' | 'ON_SCENE'
+  | 'TRANSPORTING' | 'AT_HOSPITAL' | 'RETURNING' | 'OFFLINE' | 'MAINTENANCE';
 export type AmbulanceType = 'BLS' | 'ALS' | 'MICU' | 'NEONATAL';
 
 export interface Incident {
@@ -22,8 +26,18 @@ export interface Incident {
   assigned_ambulance_id?: string;
   assigned_hospital_id?: string;
   assigned_hospital_name?: string;
+  assigned_hospital_short?: string;
   ambulance_eta_minutes?: number;
+  ambulance_distance_km?: number;
   hospital_eta_minutes?: number;
+  hospital_distance_km?: number;
+  hospital_selection_reason?: string;
+  hospital_trauma_level?: number;
+  hospital_icu_available?: number;
+  // Route geometry (from backend)
+  route_to_scene?: [number, number][];
+  route_to_hospital?: [number, number][];
+  route_source?: string;
   timeline: Record<string, string>;
   is_demo: boolean;
   detected_at: string;

@@ -4,6 +4,34 @@ import type {
   IncidentStats, HospitalStats, AmbulanceStats, Blackspot
 } from '../types';
 
+// ── Route geometry for a dispatched ambulance ────────────────────────────────
+export interface ActiveRoute {
+  ambulanceId: string;
+  vehicleNumber: string;
+  ambulanceType: string;
+  incidentId: string;
+  incidentNumber: string;
+  // Current ambulance position
+  currentLat: number;
+  currentLon: number;
+  heading: number;
+  speedKmh: number;
+  // Route geometry
+  routeToScene: [number, number][];      // [lat, lon] pairs
+  routeToHospital: [number, number][];   // [lat, lon] pairs
+  routeSource: string;                   // 'osrm' | 'straight_line'
+  // Phase
+  phase: 'to_scene' | 'to_hospital' | 'at_scene' | 'at_hospital';
+  routeProgress: number;                 // 0.0 – 1.0
+  etaMinutes: number;
+  // Hospital info
+  hospitalId: string;
+  hospitalName: string;
+  hospitalSelectionReason: string;
+  hospitalLat: number;
+  hospitalLon: number;
+}
+
 interface RoadSoSState {
   // Connection
   wsStatus: ConnectionStatus;
@@ -22,6 +50,12 @@ interface RoadSoSState {
   setAmbulances: (ambulances: Ambulance[]) => void;
   updateAmbulancePosition: (id: string, lat: number, lon: number, heading: number, speed: number) => void;
   updateAmbulanceStatus: (id: string, status: string) => void;
+
+  // Active routes (the core of the map story)
+  activeRoutes: Record<string, ActiveRoute>;
+  setActiveRoute: (ambulanceId: string, route: ActiveRoute) => void;
+  updateRoutePosition: (ambulanceId: string, lat: number, lon: number, heading: number, speed: number, progress: number, eta: number, phase: string) => void;
+  removeRoute: (ambulanceId: string) => void;
 
   // Hospitals
   hospitals: Hospital[];
@@ -51,6 +85,8 @@ interface RoadSoSState {
   toggleAmbulances: () => void;
   showHospitals: boolean;
   toggleHospitals: () => void;
+  showRoutes: boolean;
+  toggleRoutes: () => void;
   isOfflineMode: boolean;
   toggleOfflineMode: () => void;
 
@@ -74,7 +110,7 @@ export interface AppNotification {
   read: boolean;
 }
 
-export const useStore = create<RoadSoSState>((set, get) => ({
+export const useStore = create<RoadSoSState>((set) => ({
   // Connection
   wsStatus: 'connecting',
   setWsStatus: (status) => set({ wsStatus: status }),
@@ -83,7 +119,7 @@ export const useStore = create<RoadSoSState>((set, get) => ({
   incidents: [],
   addIncident: (incident) =>
     set((state) => ({
-      incidents: [incident, ...state.incidents].slice(0, 100), // keep last 100
+      incidents: [incident, ...state.incidents].slice(0, 100),
     })),
   updateIncident: (id, updates) =>
     set((state) => ({
@@ -118,6 +154,39 @@ export const useStore = create<RoadSoSState>((set, get) => ({
       ),
     })),
 
+  // Active routes
+  activeRoutes: {},
+  setActiveRoute: (ambulanceId, route) =>
+    set((state) => ({
+      activeRoutes: { ...state.activeRoutes, [ambulanceId]: route },
+    })),
+  updateRoutePosition: (ambulanceId, lat, lon, heading, speed, progress, eta, phase) =>
+    set((state) => {
+      const existing = state.activeRoutes[ambulanceId];
+      if (!existing) return state;
+      return {
+        activeRoutes: {
+          ...state.activeRoutes,
+          [ambulanceId]: {
+            ...existing,
+            currentLat: lat,
+            currentLon: lon,
+            heading,
+            speedKmh: speed,
+            routeProgress: progress,
+            etaMinutes: eta,
+            phase: phase as ActiveRoute['phase'],
+          },
+        },
+      };
+    }),
+  removeRoute: (ambulanceId) =>
+    set((state) => {
+      const next = { ...state.activeRoutes };
+      delete next[ambulanceId];
+      return { activeRoutes: next };
+    }),
+
   // Hospitals
   hospitals: [],
   setHospitals: (hospitals) => set({ hospitals }),
@@ -151,6 +220,8 @@ export const useStore = create<RoadSoSState>((set, get) => ({
   toggleAmbulances: () => set((state) => ({ showAmbulances: !state.showAmbulances })),
   showHospitals: true,
   toggleHospitals: () => set((state) => ({ showHospitals: !state.showHospitals })),
+  showRoutes: true,
+  toggleRoutes: () => set((state) => ({ showRoutes: !state.showRoutes })),
   isOfflineMode: false,
   toggleOfflineMode: () => set((state) => ({ isOfflineMode: !state.isOfflineMode })),
 
