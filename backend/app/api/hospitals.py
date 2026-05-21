@@ -1,5 +1,6 @@
 """
 Hospital Intelligence API endpoints.
+Seeded with MockHospital items using IDs h1 through h10 (matching simulator).
 """
 import math
 import random
@@ -12,7 +13,7 @@ from app.websocket.manager import ws_manager, WSEventType
 
 router = APIRouter(prefix="/api/hospitals", tags=["Hospitals"])
 
-# In-memory hospital store (seeded from seed script)
+# In-memory hospital store (seeded on import)
 _hospitals_store: list = []
 
 
@@ -20,6 +21,131 @@ def set_hospitals(hospitals: list):
     """Called by seed script to populate hospital data."""
     global _hospitals_store
     _hospitals_store = hospitals
+
+
+# ── Hospital data (10 Bangalore hospitals, IDs h1–h10) ────────────────────────
+_HOSPITAL_DATA = [
+    {
+        "id": "h1", "name": "Manipal Hospital Whitefield",
+        "short_name": "Manipal WF", "latitude": 12.9698, "longitude": 77.7499,
+        "address": "Whitefield Main Road, Bangalore", "district": "Mahadevapura",
+        "trauma_level": 1, "has_trauma_center": True, "has_cath_lab": True,
+        "has_neurosurgery": True, "total_icu_beds": 40, "available_icu_beds": 18,
+        "current_patient_load": 55, "max_patient_load": 100,
+        "total_emergency_beds": 50, "available_emergency_beds": 20,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+", "O-"],
+        "active_specialists": ["Trauma Surgeon", "Orthopedic", "Neurosurgeon"],
+    },
+    {
+        "id": "h2", "name": "Apollo Hospital Bannerghatta",
+        "short_name": "Apollo BG", "latitude": 12.8900, "longitude": 77.5970,
+        "address": "Bannerghatta Road, Bangalore", "district": "Bommanahalli",
+        "trauma_level": 1, "has_trauma_center": True, "has_cath_lab": True,
+        "has_neurosurgery": True, "total_icu_beds": 50, "available_icu_beds": 22,
+        "current_patient_load": 45, "max_patient_load": 100,
+        "total_emergency_beds": 60, "available_emergency_beds": 25,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+", "A-", "B-"],
+        "active_specialists": ["Trauma Surgeon", "Cardiologist", "Neurosurgeon"],
+    },
+    {
+        "id": "h3", "name": "Fortis Hospital Cunningham Road",
+        "short_name": "Fortis CR", "latitude": 12.9900, "longitude": 77.5900,
+        "address": "Cunningham Road, Bangalore", "district": "Shivajinagar",
+        "trauma_level": 1, "has_trauma_center": True, "has_cath_lab": True,
+        "has_neurosurgery": True, "total_icu_beds": 35, "available_icu_beds": 15,
+        "current_patient_load": 60, "max_patient_load": 100,
+        "total_emergency_beds": 40, "available_emergency_beds": 12,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+"],
+        "active_specialists": ["Trauma Surgeon", "Orthopedic", "Neurosurgeon"],
+    },
+    {
+        "id": "h4", "name": "Victoria Hospital",
+        "short_name": "Victoria", "latitude": 12.9716, "longitude": 77.5946,
+        "address": "Fort Road, Bangalore", "district": "Shivajinagar",
+        "trauma_level": 2, "has_trauma_center": True, "has_cath_lab": False,
+        "has_neurosurgery": False, "total_icu_beds": 60, "available_icu_beds": 25,
+        "current_patient_load": 65, "max_patient_load": 100,
+        "total_emergency_beds": 80, "available_emergency_beds": 30,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+", "A-", "B-", "O-", "AB-"],
+        "active_specialists": ["Trauma Surgeon", "Orthopedic"],
+    },
+    {
+        "id": "h5", "name": "St. John's Medical College Hospital",
+        "short_name": "St. Johns", "latitude": 12.9352, "longitude": 77.6245,
+        "address": "Sarjapur Road, Bangalore", "district": "Bommanahalli",
+        "trauma_level": 1, "has_trauma_center": True, "has_cath_lab": True,
+        "has_neurosurgery": True, "total_icu_beds": 45, "available_icu_beds": 20,
+        "current_patient_load": 50, "max_patient_load": 100,
+        "total_emergency_beds": 55, "available_emergency_beds": 22,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+"],
+        "active_specialists": ["Trauma Surgeon", "Cardiologist", "Neurosurgeon", "Orthopedic"],
+    },
+    {
+        "id": "h6", "name": "Narayana Health City",
+        "short_name": "Narayana HC", "latitude": 12.8399, "longitude": 77.6770,
+        "address": "Hosur Road, Bangalore", "district": "Bommanahalli",
+        "trauma_level": 1, "has_trauma_center": True, "has_cath_lab": True,
+        "has_neurosurgery": True, "total_icu_beds": 80, "available_icu_beds": 35,
+        "current_patient_load": 40, "max_patient_load": 100,
+        "total_emergency_beds": 100, "available_emergency_beds": 45,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+", "A-", "B-", "O-"],
+        "active_specialists": ["Trauma Surgeon", "Cardiologist", "Neurosurgeon", "Orthopedic", "Pulmonologist"],
+    },
+    {
+        "id": "h7", "name": "Sakra World Hospital",
+        "short_name": "Sakra", "latitude": 12.9591, "longitude": 77.6974,
+        "address": "Marathahalli, Bangalore", "district": "Mahadevapura",
+        "trauma_level": 2, "has_trauma_center": True, "has_cath_lab": False,
+        "has_neurosurgery": False, "total_icu_beds": 30, "available_icu_beds": 12,
+        "current_patient_load": 70, "max_patient_load": 100,
+        "total_emergency_beds": 35, "available_emergency_beds": 10,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+"],
+        "active_specialists": ["Trauma Surgeon", "Orthopedic"],
+    },
+    {
+        "id": "h8", "name": "BGS Gleneagles Global Hospital",
+        "short_name": "BGS Global", "latitude": 12.9100, "longitude": 77.4900,
+        "address": "Kengeri, Bangalore", "district": "Rajarajeshwari Nagar",
+        "trauma_level": 2, "has_trauma_center": True, "has_cath_lab": True,
+        "has_neurosurgery": False, "total_icu_beds": 25, "available_icu_beds": 10,
+        "current_patient_load": 75, "max_patient_load": 100,
+        "total_emergency_beds": 30, "available_emergency_beds": 8,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+"],
+        "active_specialists": ["Trauma Surgeon", "Cardiologist"],
+    },
+    {
+        "id": "h9", "name": "Aster CMI Hospital",
+        "short_name": "Aster CMI", "latitude": 13.0358, "longitude": 77.5970,
+        "address": "Hebbal, Bangalore", "district": "Yelahanka",
+        "trauma_level": 2, "has_trauma_center": True, "has_cath_lab": True,
+        "has_neurosurgery": False, "total_icu_beds": 35, "available_icu_beds": 14,
+        "current_patient_load": 58, "max_patient_load": 100,
+        "total_emergency_beds": 40, "available_emergency_beds": 15,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+", "AB+", "A-"],
+        "active_specialists": ["Trauma Surgeon", "Cardiologist", "Orthopedic"],
+    },
+    {
+        "id": "h10", "name": "Columbia Asia Hospital Whitefield",
+        "short_name": "Columbia WF", "latitude": 12.9698, "longitude": 77.7499,
+        "address": "Whitefield, Bangalore", "district": "Mahadevapura",
+        "trauma_level": 3, "has_trauma_center": False, "has_cath_lab": False,
+        "has_neurosurgery": False, "total_icu_beds": 20, "available_icu_beds": 8,
+        "current_patient_load": 80, "max_patient_load": 100,
+        "total_emergency_beds": 25, "available_emergency_beds": 5,
+        "is_active": True, "is_on_alert": False,
+        "available_blood_types": ["A+", "B+", "O+"],
+        "active_specialists": ["Orthopedic"],
+    },
+]
 
 
 class HospitalRankRequest(BaseModel):
@@ -38,7 +164,6 @@ async def rank_hospitals(request: HospitalRankRequest):
     Returns sorted list with suitability scores and recommendation explanations.
     """
     if not _hospitals_store:
-        # Return mock data if not seeded
         return _get_mock_rankings(request.latitude, request.longitude, request.severity)
 
     rankings = hospital_engine.rank_hospitals(
@@ -103,7 +228,7 @@ async def list_hospitals(
 
 @router.get("/stats")
 async def get_hospital_stats():
-    """Get aggregate hospital statistics."""
+    """Get aggregate hospital statistics computed from actual _hospitals_store state."""
     if not _hospitals_store:
         return _get_mock_hospital_stats()
 
@@ -129,14 +254,15 @@ async def get_hospital_stats():
 async def get_hospital(hospital_id: str):
     """Get a specific hospital by ID."""
     for h in _hospitals_store:
-        if h.id == hospital_id:
+        if hasattr(h, 'id') and h.id == hospital_id:
             return h.to_dict()
+        if isinstance(h, dict) and h.get("id") == hospital_id:
+            return h
     raise HTTPException(status_code=404, detail="Hospital not found")
 
 
 def _get_mock_rankings(lat: float, lon: float, severity: str) -> dict:
     """Return mock hospital rankings when DB is not available."""
-    import random
     hospitals = _get_mock_hospitals()
     for i, h in enumerate(hospitals):
         dist = math.sqrt((h["latitude"] - lat) ** 2 + (h["longitude"] - lon) ** 2) * 111
@@ -163,58 +289,95 @@ def _get_mock_rankings(lat: float, lon: float, severity: str) -> dict:
 
 
 def _get_mock_hospitals() -> list:
-    """Return mock hospital data for demo."""
-    return [
-        {
-            "id": f"hosp-{i:03d}",
-            "name": name,
-            "short_name": short,
-            "latitude": lat,
-            "longitude": lon,
-            "address": addr,
-            "district": dist,
-            "phone": f"080-{random.randint(10000000, 99999999)}",
-            "trauma_level": tl,
-            "has_trauma_center": tl <= 2,
-            "has_icu": True,
-            "has_cath_lab": tl == 1,
-            "has_neurosurgery": tl <= 2,
-            "total_icu_beds": icu_total,
-            "available_icu_beds": icu_avail,
-            "total_emergency_beds": 50,
-            "available_emergency_beds": 20,
-            "current_patient_load": random.randint(20, 70),
-            "max_patient_load": 100,
-            "available_blood_types": ["A+", "B+", "O+", "AB+", "O-"],
-            "active_specialists": ["Trauma Surgeon", "Orthopedic", "Neurosurgeon"],
-            "suitability_score": 0,
-            "load_percentage": random.uniform(30, 80),
-            "is_active": True,
-            "is_on_alert": random.random() < 0.3,
-            "accepts_trauma": True,
-        }
-        for i, (name, short, lat, lon, addr, dist, tl, icu_total, icu_avail) in enumerate([
-            ("Manipal Hospital Whitefield", "Manipal WF", 12.9698, 77.7499, "Whitefield Main Road, Bangalore", "Mahadevapura", 1, 40, 18),
-            ("Apollo Hospital Bannerghatta", "Apollo BG", 12.8900, 77.5970, "Bannerghatta Road, Bangalore", "Bommanahalli", 1, 50, 22),
-            ("Fortis Hospital Cunningham Road", "Fortis CR", 12.9900, 77.5900, "Cunningham Road, Bangalore", "Shivajinagar", 1, 35, 15),
-            ("Victoria Hospital", "Victoria", 12.9716, 77.5946, "Fort Road, Bangalore", "Shivajinagar", 2, 60, 25),
-            ("St. John's Medical College Hospital", "St. Johns", 12.9352, 77.6245, "Sarjapur Road, Bangalore", "Bommanahalli", 1, 45, 20),
-            ("Narayana Health City", "Narayana HC", 12.8399, 77.6770, "Hosur Road, Bangalore", "Bommanahalli", 1, 80, 35),
-            ("Sakra World Hospital", "Sakra", 12.9591, 77.6974, "Marathahalli, Bangalore", "Mahadevapura", 2, 30, 12),
-            ("BGS Gleneagles Global Hospital", "BGS Global", 12.9100, 77.4900, "Kengeri, Bangalore", "Rajarajeshwari Nagar", 2, 25, 10),
-            ("Aster CMI Hospital", "Aster CMI", 13.0358, 77.5970, "Hebbal, Bangalore", "Yelahanka", 2, 35, 14),
-            ("Columbia Asia Hospital Whitefield", "Columbia WF", 12.9698, 77.7499, "Whitefield, Bangalore", "Mahadevapura", 3, 20, 8),
-        ])
-    ]
+    """Return mock hospital data for demo. Uses same data as _HOSPITAL_DATA."""
+    random.seed(42)
+    hospitals = []
+    for data in _HOSPITAL_DATA:
+        h = dict(data)
+        h["phone"] = f"080-{random.randint(10000000, 99999999)}"
+        h["load_percentage"] = round(data["current_patient_load"] / data["max_patient_load"] * 100, 1)
+        h["suitability_score"] = 0
+        hospitals.append(h)
+    return hospitals
 
 
 def _get_mock_hospital_stats() -> dict:
+    """Fallback hospital stats when store is empty."""
+    total_icu = sum(h["total_icu_beds"] for h in _HOSPITAL_DATA)
+    available_icu = sum(h["available_icu_beds"] for h in _HOSPITAL_DATA)
+    trauma_centers = sum(1 for h in _HOSPITAL_DATA if h["has_trauma_center"])
+    active = sum(1 for h in _HOSPITAL_DATA if h["is_active"])
+    on_alert = sum(1 for h in _HOSPITAL_DATA if h.get("is_on_alert", False))
     return {
-        "total_hospitals": 50,
-        "active_hospitals": 48,
-        "on_alert": random.randint(3, 8),
-        "trauma_centers": 12,
-        "total_icu_beds": 850,
-        "available_icu_beds": random.randint(200, 400),
-        "icu_occupancy_percent": round(random.uniform(45, 75), 1),
+        "total_hospitals": len(_HOSPITAL_DATA),
+        "active_hospitals": active,
+        "on_alert": on_alert,
+        "trauma_centers": trauma_centers,
+        "total_icu_beds": total_icu,
+        "available_icu_beds": available_icu,
+        "icu_occupancy_percent": round((1 - available_icu / max(total_icu, 1)) * 100, 1),
     }
+
+
+class MockHospital:
+    def __init__(self, data: dict):
+        self.id = data["id"]
+        self.name = data["name"]
+        self.short_name = data.get("short_name", "")
+        self.latitude = data["latitude"]
+        self.longitude = data["longitude"]
+        self.address = data.get("address", "")
+        self.district = data.get("district", "")
+        self.phone = data.get("phone", "")
+        self.trauma_level = data.get("trauma_level", 4)
+        self.has_trauma_center = data.get("has_trauma_center", False)
+        self.has_icu = data.get("has_icu", True)
+        self.has_cath_lab = data.get("has_cath_lab", False)
+        self.has_neurosurgery = data.get("has_neurosurgery", False)
+        self.total_icu_beds = data.get("total_icu_beds", 10)
+        self.available_icu_beds = data.get("available_icu_beds", 5)
+        self.total_emergency_beds = data.get("total_emergency_beds", 20)
+        self.available_emergency_beds = data.get("available_emergency_beds", 10)
+        self.current_patient_load = data.get("current_patient_load", 50)
+        self.max_patient_load = data.get("max_patient_load", 100)
+        self.available_blood_types = data.get("available_blood_types", [])
+        self.active_specialists = data.get("active_specialists", [])
+        self.suitability_score = data.get("suitability_score", 0.0)
+        self.load_percentage = data.get("load_percentage", 50.0)
+        self.is_active = data.get("is_active", True)
+        self.is_on_alert = data.get("is_on_alert", False)
+        self.accepts_trauma = data.get("accepts_trauma", True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "short_name": self.short_name,
+            "latitude": self.latitude,
+            "longitude": self.longitude,
+            "address": self.address,
+            "district": self.district,
+            "phone": self.phone,
+            "trauma_level": self.trauma_level,
+            "has_trauma_center": self.has_trauma_center,
+            "has_icu": self.has_icu,
+            "has_cath_lab": self.has_cath_lab,
+            "has_neurosurgery": self.has_neurosurgery,
+            "total_icu_beds": self.total_icu_beds,
+            "available_icu_beds": self.available_icu_beds,
+            "total_emergency_beds": self.total_emergency_beds,
+            "available_emergency_beds": self.available_emergency_beds,
+            "current_patient_load": self.current_patient_load,
+            "max_patient_load": self.max_patient_load,
+            "available_blood_types": self.available_blood_types,
+            "active_specialists": self.active_specialists,
+            "suitability_score": self.suitability_score,
+            "load_percentage": self.load_percentage,
+            "is_active": self.is_active,
+            "is_on_alert": self.is_on_alert,
+            "accepts_trauma": self.accepts_trauma,
+        }
+
+
+# Seed _hospitals_store on module import
+_hospitals_store.extend([MockHospital(h) for h in _HOSPITAL_DATA])

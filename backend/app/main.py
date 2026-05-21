@@ -81,6 +81,7 @@ from app.api.hospitals import router as hospitals_router
 from app.api.ambulances import router as ambulances_router
 from app.api.risk import router as risk_router
 from app.api.analytics import router as analytics_router
+from app.api.routes import router as routes_router
 
 app.include_router(detection_router)
 app.include_router(incidents_router)
@@ -88,6 +89,8 @@ app.include_router(hospitals_router)
 app.include_router(ambulances_router)
 app.include_router(risk_router)
 app.include_router(analytics_router)
+app.include_router(routes_router)
+
 
 
 # ============================================================
@@ -112,17 +115,36 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
     await ws_manager.connect(websocket, client_id)
 
     try:
-        # Send initial state snapshot
-        from app.api.incidents import _incidents_store
-        from app.api.ambulances import _ambulances_store
-
+        # Send initial state snapshot (from simulator if active, otherwise from stores)
         snapshot = {
-            "active_incidents": list(_incidents_store.values())[-20:],
-            "ambulances": list(_ambulances_store.values()),
             "server_time": datetime.utcnow().isoformat(),
             "demo_mode": settings.DEMO_MODE,
             "connection_id": client_id,
         }
+
+        if settings.DEMO_MODE:
+            try:
+                from app.demo.simulator import demo_simulator
+                sim_snapshot = await demo_simulator.build_state_snapshot()
+                snapshot.update(sim_snapshot)
+            except Exception as e:
+                logger.warning(f"Could not build simulator snapshot: {e}")
+                # Fallback to direct stores
+                from app.api.incidents import _incidents_store
+                from app.api.ambulances import _ambulances_store
+                snapshot["active_incidents"] = list(_incidents_store.values())[-20:]
+                snapshot["ambulances"] = list(_ambulances_store.values())
+                snapshot["active_routes"] = []
+                from app.api.hospitals import _hospitals_store
+                if _hospitals_store:
+                    snapshot["hospitals"] = [h.to_dict() for h in _hospitals_store]
+        else:
+            from app.api.incidents import _incidents_store
+            from app.api.ambulances import _ambulances_store
+            snapshot["active_incidents"] = list(_incidents_store.values())[-20:]
+            snapshot["ambulances"] = list(_ambulances_store.values())
+            snapshot["active_routes"] = []
+
         await ws_manager.send_state_snapshot(client_id, snapshot)
 
         # Keep connection alive

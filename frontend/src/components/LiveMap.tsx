@@ -3,11 +3,14 @@
  *
  * Visual story for every incident:
  *   🔴 Accident marker (orange/red by severity)
- *   🚑 Ambulance marker (cyan, animated along route)
+ *   🚑 Ambulance marker (cyan/animated along route)
  *   🏥 Hospital marker (green, selected hospital highlighted)
  *   ─── Red polyline: ambulance → accident (road-following)
  *   ─── Blue polyline: accident → hospital (road-following)
  *   ─── Faded grey: risk heatmap segments
+ *   🏷️ Route labels: AMB-12 → Accident / AMB-12 → St John's Hospital
+ *
+ * Focus mode: Click an incident to fade unrelated routes
  *
  * Color system:
  *   Red    = ambulance → scene route
@@ -88,7 +91,7 @@ function makeIncidentIcon(severity: string, isSelected: boolean) {
 
 function makeAmbulanceIcon(phase: string, heading: number) {
   const color = phase === 'to_hospital' || phase === 'at_scene' ? '#bf5af2' : '#00d4ff';
-  const emoji = phase === 'to_hospital' ? '🚑' : '🚑';
+  const emoji = '🚑';
   return L.divIcon({
     html: `
       <div style="
@@ -162,7 +165,7 @@ function HeatmapLayer() {
         `<div style="font-family:monospace;font-size:11px;color:#e8eaf6;background:#141d35;padding:4px 8px;border-radius:4px;border:1px solid #1e2d4a;">
           <strong>${feature.properties?.name || 'Road Segment'}</strong><br/>
           Risk: <span style="color:${color};font-weight:bold">${risk.toFixed(0)}/100</span>
-          &nbsp;·&nbsp;${feature.properties?.risk_level || ''}
+          &nbsp;&middot;&nbsp;${feature.properties?.risk_level || ''}
         </div>`,
         { sticky: true, opacity: 1, className: 'leaflet-tooltip-dark' }
       );
@@ -190,11 +193,9 @@ function MapController() {
     const inc = incidents.find((i) => i.id === selectedIncidentId);
     if (!inc) return;
 
-    // Find the route for this incident
     const route = Object.values(activeRoutes).find((r) => r.incidentId === selectedIncidentId);
 
     if (route && (route.routeToScene.length > 0 || route.routeToHospital.length > 0)) {
-      // Fit bounds to show the full route
       const allPoints: [number, number][] = [
         [inc.latitude, inc.longitude],
         [route.currentLat, route.currentLon],
@@ -212,43 +213,68 @@ function MapController() {
 }
 
 // ── Route overlay for one active incident ────────────────────────────────────
-function RouteOverlay({ route, incident }: { route: ActiveRoute; incident: Incident | undefined }) {
+function RouteOverlay({ route, incident, isFocused }: { route: ActiveRoute; incident: Incident | undefined; isFocused: boolean }) {
   const { showRoutes } = useStore();
   if (!showRoutes) return null;
 
   const isToScene = route.phase === 'to_scene';
   const isToHospital = route.phase === 'to_hospital';
 
-  // Ambulance → scene: red dashed (en route) or faded (completed)
-  const sceneRouteColor = '#ff2d55';
-  const hospitalRouteColor = '#00d4ff';
+  // If not focused, fade everything
+  const baseOpacity = isFocused ? 1.0 : 0.2;
+  const sceneOpacity = isToScene ? baseOpacity * 0.9 : baseOpacity * 0.3;
+  const hospitalOpacity = isToHospital ? baseOpacity * 0.9 : baseOpacity * 0.4;
 
   return (
     <>
-      {/* Ambulance → scene route */}
-      {route.routeToScene.length > 1 && (
+      {/* Route label at midpoint of scene route */}
+      {route.routeToScene.length > 3 && (
         <Polyline
           positions={route.routeToScene}
           pathOptions={{
-            color: sceneRouteColor,
+            color: '#ff2d55',
             weight: isToScene ? 4 : 2,
-            opacity: isToScene ? 0.9 : 0.3,
+            opacity: sceneOpacity,
             dashArray: isToScene ? undefined : '6 8',
           }}
-        />
+        >
+          <Tooltip permanent direction="top" offset={[0, -10]} className="route-label-tooltip">
+            <span style={{
+              fontFamily: 'monospace', fontSize: '10px', fontWeight: 'bold',
+              color: '#ff2d55', background: 'rgba(15,22,41,0.9)',
+              padding: '2px 6px', borderRadius: '3px',
+              border: '1px solid #ff2d55',
+              whiteSpace: 'nowrap',
+            }}>
+              🚑 {route.vehicleNumber} → Scene
+            </span>
+          </Tooltip>
+        </Polyline>
       )}
 
-      {/* Scene → hospital route */}
-      {route.routeToHospital.length > 1 && (
+      {/* Route label at midpoint of hospital route */}
+      {route.routeToHospital.length > 3 && (
         <Polyline
           positions={route.routeToHospital}
           pathOptions={{
-            color: hospitalRouteColor,
+            color: '#00d4ff',
             weight: isToHospital ? 4 : 2,
-            opacity: isToHospital ? 0.9 : 0.4,
+            opacity: hospitalOpacity,
             dashArray: isToHospital ? undefined : '6 8',
           }}
-        />
+        >
+          <Tooltip permanent direction="top" offset={[0, -10]} className="route-label-tooltip">
+            <span style={{
+              fontFamily: 'monospace', fontSize: '10px', fontWeight: 'bold',
+              color: '#00d4ff', background: 'rgba(15,22,41,0.9)',
+              padding: '2px 6px', borderRadius: '3px',
+              border: '1px solid #00d4ff',
+              whiteSpace: 'nowrap',
+            }}>
+              🚑 {route.vehicleNumber} → {route.hospitalName}
+            </span>
+          </Tooltip>
+        </Polyline>
       )}
 
       {/* Ambulance current position */}
@@ -257,6 +283,17 @@ function RouteOverlay({ route, incident }: { route: ActiveRoute; incident: Incid
         icon={makeAmbulanceIcon(route.phase, route.heading)}
         zIndexOffset={1000}
       >
+        <Tooltip permanent direction="top" offset={[0, -18]} className="ambulance-label-tooltip">
+          <span style={{
+            fontFamily: 'monospace', fontSize: '10px', fontWeight: 'bold',
+            color: '#00d4ff', background: 'rgba(15,22,41,0.9)',
+            padding: '2px 6px', borderRadius: '3px',
+            border: '1px solid #00d4ff',
+            whiteSpace: 'nowrap',
+          }}>
+            {route.vehicleNumber}
+          </span>
+        </Tooltip>
         <Popup>
           <div style={{ fontFamily: 'monospace', fontSize: '12px', color: '#e8eaf6', minWidth: '220px' }}>
             <div style={{ fontWeight: 'bold', color: '#00d4ff', marginBottom: '6px' }}>
@@ -372,6 +409,28 @@ function MapLegend() {
           <span>{label}</span>
         </div>
       ))}
+      <div style={{ marginTop: '6px', fontSize: '9px', color: '#4a5568', borderTop: '1px solid #1e2d4a', paddingTop: '4px' }}>
+        💡 Click an incident to focus its route
+      </div>
+    </div>
+  );
+}
+
+// ── Interaction hint for focus mode ──────────────────────────────────────────
+function FocusHint({ selectedIncidentId }: { selectedIncidentId: string | null }) {
+  if (!selectedIncidentId) return null;
+  return (
+    <div style={{
+      position: 'absolute', top: '10px', right: '10px', zIndex: 1000,
+      background: 'rgba(15,22,41,0.9)', border: '1px solid #00d4ff',
+      borderRadius: '6px', padding: '6px 10px',
+      fontFamily: 'monospace', fontSize: '10px', color: '#00d4ff',
+      cursor: 'pointer', backdropFilter: 'blur(4px)',
+    }}
+    onClick={() => useStore.getState().setSelectedIncident(null)}
+    title="Click to exit focus mode"
+    >
+      🔍 FOCUS MODE — Click to exit
     </div>
   );
 }
@@ -397,6 +456,15 @@ export function LiveMap({ height = '100%', showControls = true }: LiveMapProps) 
     Object.values(activeRoutes).map((r) => r.hospitalId)
   );
 
+  // Determine which routes are "focused" (when an incident is selected)
+  const focusedAmbulanceIds = selectedIncidentId
+    ? new Set(
+        Object.values(activeRoutes)
+          .filter((r) => r.incidentId === selectedIncidentId)
+          .map((r) => r.ambulanceId)
+      )
+    : null;
+
   return (
     <div style={{ height, position: 'relative' }} className="rounded-lg overflow-hidden border border-sos-border">
       <MapContainer
@@ -420,8 +488,12 @@ export function LiveMap({ height = '100%', showControls = true }: LiveMapProps) 
         {/* ── Active routes (ambulance + route lines + hospital) ── */}
         {Object.values(activeRoutes).map((route) => {
           const incident = incidents.find((i) => i.id === route.incidentId);
+          // In focus mode, only fully show the focused route
+          const isFocused = focusedAmbulanceIds
+            ? focusedAmbulanceIds.has(route.ambulanceId)
+            : true;
           return (
-            <RouteOverlay key={route.ambulanceId} route={route} incident={incident} />
+            <RouteOverlay key={route.ambulanceId} route={route} incident={incident} isFocused={isFocused} />
           );
         })}
 
@@ -429,15 +501,18 @@ export function LiveMap({ height = '100%', showControls = true }: LiveMapProps) 
         {activeIncidents.map((incident) => {
           const isSelected = selectedIncidentId === incident.id;
           const hasRoute = Object.values(activeRoutes).some((r) => r.incidentId === incident.id);
+          // In focus mode, fade non-selected incidents
+          const eventListeners = {
+            click: () => setSelectedIncident(isSelected ? null : incident.id),
+          };
           return (
             <Marker
               key={incident.id}
               position={[incident.latitude, incident.longitude]}
               icon={makeIncidentIcon(incident.severity, isSelected)}
-              zIndexOffset={isSelected ? 2000 : 500}
-              eventHandlers={{
-                click: () => setSelectedIncident(isSelected ? null : incident.id),
-              }}
+              zIndexOffset={isSelected ? 2000 : (focusedAmbulanceIds && !isSelected ? 100 : 500)}
+              opacity={focusedAmbulanceIds && !isSelected ? 0.3 : 1}
+              eventHandlers={eventListeners}
             >
               <Popup>
                 <IncidentPopup incident={incident} hasRoute={hasRoute} />
@@ -451,12 +526,13 @@ export function LiveMap({ height = '100%', showControls = true }: LiveMapProps) 
           hospitals
             .filter((h) => h.latitude && h.longitude && !assignedHospitalIds.has(h.id))
             .slice(0, 15)
-            .map((hosp) => (
+            .map((hosp, idx) => (
               <Marker
-                key={hosp.id}
+                key={`${hosp.id}-${idx}`}
                 position={[hosp.latitude, hosp.longitude]}
                 icon={makeHospitalIcon(false)}
                 zIndexOffset={100}
+                opacity={focusedAmbulanceIds ? 0.3 : 1}
               >
                 <Popup>
                   <div style={{ fontFamily: 'monospace', fontSize: '12px', color: '#e8eaf6', minWidth: '180px' }}>
@@ -509,6 +585,7 @@ export function LiveMap({ height = '100%', showControls = true }: LiveMapProps) 
         )}
       </div>
 
+      <FocusHint selectedIncidentId={selectedIncidentId} />
       <MapLegend />
     </div>
   );

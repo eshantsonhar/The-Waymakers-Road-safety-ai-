@@ -4,8 +4,8 @@
 
 export type SeverityLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type IncidentStatus =
-  | 'DETECTED' | 'CONFIRMED' | 'DISPATCHED' | 'EN_ROUTE'
-  | 'ON_SCENE' | 'TRANSPORTING' | 'RESOLVED' | 'FALSE_ALARM';
+  | 'DETECTED' | 'DISPATCHING' | 'EN_ROUTE_TO_SCENE'
+  | 'ON_SCENE' | 'TRANSPORTING' | 'AT_HOSPITAL' | 'RESOLVED' | 'FALSE_ALARM';
 export type AmbulanceStatus =
   | 'AVAILABLE' | 'DISPATCHED' | 'EN_ROUTE_TO_SCENE' | 'ON_SCENE'
   | 'TRANSPORTING' | 'AT_HOSPITAL' | 'RETURNING' | 'OFFLINE' | 'MAINTENANCE';
@@ -38,6 +38,7 @@ export interface Incident {
   route_to_scene?: [number, number][];
   route_to_hospital?: [number, number][];
   route_source?: string;
+  version?: number;
   timeline: Record<string, string>;
   is_demo: boolean;
   detected_at: string;

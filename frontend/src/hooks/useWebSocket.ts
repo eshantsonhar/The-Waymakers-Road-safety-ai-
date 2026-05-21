@@ -1,6 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { useStore } from '../store/useStore';
-import type { ActiveRoute } from '../store/useStore';
+import { useStore, type RouteReconstruction } from '../store/useStore';
 import type { WSMessage, Incident, Ambulance } from '../types';
 
 const WS_URL = `ws://${window.location.hostname}:8000/ws`;
@@ -28,6 +27,8 @@ export function useWebSocket() {
     setActiveRoute,
     updateRoutePosition,
     removeRoute,
+    setHospitals,
+    setRoutesFromReconstruction,
   } = useStore();
 
   const handleMessage = useCallback((message: WSMessage) => {
@@ -39,10 +40,34 @@ export function useWebSocket() {
         const snap = payload as {
           active_incidents?: Incident[];
           ambulances?: Ambulance[];
+          active_routes?: RouteReconstruction[];
+          hospitals?: Array<Record<string, unknown>>;
+          demo_mode?: boolean;
+          sim_tick?: number;
         };
-        if (snap.ambulances) setAmbulances(snap.ambulances);
+
+        // 1. Set ambulances
+        if (snap.ambulances) {
+          setAmbulances(snap.ambulances);
+        }
+
+        // 2. Set incidents
         if (snap.active_incidents) {
           snap.active_incidents.forEach((inc) => addIncident(inc));
+        }
+
+        // 3. Set hospitals if provided
+        if (snap.hospitals) {
+          setHospitals(snap.hospitals as any);
+        }
+
+        // 4. Reconstruct active routes from snapshot
+        if (snap.active_routes && snap.ambulances && snap.active_incidents) {
+          setRoutesFromReconstruction(
+            snap.active_routes,
+            snap.ambulances,
+            snap.active_incidents,
+          );
         }
         break;
       }
@@ -52,14 +77,9 @@ export function useWebSocket() {
         const incident = payload as Incident;
         addIncident(incident);
 
-        // If the incident already has route geometry (from simulator), create the route
-        if (incident.assigned_ambulance_id && incident.route_to_scene && incident.route_to_hospital) {
-          // We'll get the full route details from AMBULANCE_ASSIGNED which fires right after
-        }
-
         addNotification({
           id: `notif-${Date.now()}`,
-          type: 'incident',
+          type: 'incident' as const,
           title: `🚨 ${incident.incident_number}`,
           message: `${incident.severity} crash at ${incident.address}${incident.assigned_hospital_name ? ` → ${incident.assigned_hospital_name}` : ''}`,
           severity: incident.severity,
@@ -100,14 +120,14 @@ export function useWebSocket() {
           hospital_id: string;
           hospital_name: string;
           hospital_selection_reason: string;
+          long_routes?: boolean;
         };
 
-        // Find hospital coords from the incident in store
         const { incidents } = useStore.getState();
         const incident = incidents.find((i) => i.id === data.incident_id);
 
         // Build the active route record
-        const route: ActiveRoute = {
+        const route = {
           ambulanceId: data.ambulance_id,
           vehicleNumber: data.vehicle_number,
           ambulanceType: data.ambulance_type,
@@ -119,23 +139,23 @@ export function useWebSocket() {
           speedKmh: 0,
           routeToScene: data.route_to_scene || [],
           routeToHospital: data.route_to_hospital || [],
-          routeSource: 'osrm',
-          phase: 'to_scene',
+          routeSource: 'osrm' as const,
+          phase: 'to_scene' as const,
           routeProgress: 0,
           etaMinutes: data.eta_to_scene_minutes,
           hospitalId: data.hospital_id,
           hospitalName: data.hospital_name,
           hospitalSelectionReason: data.hospital_selection_reason || '',
-          // Try to get hospital coords from incident
-          hospitalLat: incident?.route_to_hospital?.at(-1)?.[0] ?? 12.9716,
-          hospitalLon: incident?.route_to_hospital?.at(-1)?.[1] ?? 77.5946,
+          hospitalLat: data.route_to_hospital?.length ? data.route_to_hospital[data.route_to_hospital.length - 1][0] : 12.9716,
+          hospitalLon: data.route_to_hospital?.length ? data.route_to_hospital[data.route_to_hospital.length - 1][1] : 77.5946,
+          label: `${data.vehicle_number} → ${data.hospital_name}`,
         };
 
         setActiveRoute(data.ambulance_id, route);
 
         addNotification({
           id: `amb-${Date.now()}`,
-          type: 'ambulance',
+          type: 'ambulance' as const,
           title: `🚑 ${data.vehicle_number} Dispatched`,
           message: `${data.ambulance_type} unit en route · ETA ${data.eta_to_scene_minutes?.toFixed(0)}min · ${data.hospital_name}`,
           timestamp: new Date().toISOString(),
@@ -207,7 +227,7 @@ export function useWebSocket() {
               ambUpdate.eta_to_hospital_minutes ?? existingRoute.etaMinutes,
               'to_hospital',
             );
-          } else if (ambUpdate.status === 'AT_HOSPITAL') {
+          } else if (ambUpdate.status === 'AT_HOSPITAL' || ambUpdate.status === 'AVAILABLE') {
             removeRoute(ambUpdate.ambulance_id);
           }
         }
@@ -218,18 +238,31 @@ export function useWebSocket() {
       case 'HOSPITAL_STATUS_UPDATE': {
         const hospData = payload as {
           updates: Array<{
-            hospital_index: number;
+            hospital_id?: string;
+            hospital_index?: number;
             available_icu_beds: number;
             current_patient_load: number;
             is_on_alert: boolean;
           }>;
         };
         hospData.updates?.forEach((update) => {
-          updateHospitalLoad(update.hospital_index, {
-            available_icu_beds: update.available_icu_beds,
-            current_patient_load: update.current_patient_load,
-            is_on_alert: update.is_on_alert,
-          });
+          if (update.hospital_index !== undefined) {
+            updateHospitalLoad(update.hospital_index, {
+              available_icu_beds: update.available_icu_beds,
+              current_patient_load: update.current_patient_load,
+              is_on_alert: update.is_on_alert,
+            });
+          } else if (update.hospital_id) {
+            const { hospitals } = useStore.getState();
+            const idx = hospitals.findIndex((h: any) => h.id === update.hospital_id);
+            if (idx >= 0) {
+              updateHospitalLoad(idx, {
+                available_icu_beds: update.available_icu_beds,
+                current_patient_load: update.current_patient_load,
+                is_on_alert: update.is_on_alert,
+              });
+            }
+          }
         });
         break;
       }
@@ -238,7 +271,7 @@ export function useWebSocket() {
         const alert = payload as { title: string; message: string; severity: string };
         addNotification({
           id: `alert-${Date.now()}`,
-          type: 'alert',
+          type: 'alert' as const,
           title: alert.title,
           message: alert.message,
           severity: alert.severity,
@@ -256,6 +289,7 @@ export function useWebSocket() {
     setAmbulances, updateAmbulancePosition, updateAmbulanceStatus,
     updateHospitalLoad, addNotification,
     setActiveRoute, updateRoutePosition, removeRoute,
+    setHospitals, setRoutesFromReconstruction,
   ]);
 
   const connect = useCallback(() => {

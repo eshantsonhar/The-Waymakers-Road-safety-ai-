@@ -49,7 +49,7 @@ for /f "tokens=*" %%v in ('node --version 2^>^&1') do echo        Node.js %%v fo
 :: INSTALL BACKEND DEPS (if needed)
 :: ============================================================
 echo [3/5] Checking backend dependencies...
-python -c "import uvicorn" >nul 2>&1
+python -c "import uvicorn, fastapi, geoalchemy2, httpx" >nul 2>&1
 if errorlevel 1 (
     echo        Installing backend requirements (first run, ~2 min)...
     pip install -r "%BACKEND%\requirements.txt" --quiet --disable-pip-version-check
@@ -60,9 +60,12 @@ if errorlevel 1 (
         echo.
         pause & exit /b 1
     )
+    echo        Installing additional dependencies...
+    pip install geoalchemy2 --quiet --disable-pip-version-check
+    pip install asyncpg --quiet --disable-pip-version-check 2>nul
     echo        Backend requirements installed OK
 ) else (
-    echo        uvicorn present - skipping install
+    echo        All backend packages present - skipping install
 )
 
 :: ============================================================
@@ -81,7 +84,7 @@ if not exist "%BACKEND%\.env" (
 echo [4/5] Checking frontend dependencies...
 if not exist "%FRONTEND%\node_modules\vite" (
     echo        Installing frontend dependencies (first run, ~1 min)...
-    npm install --prefix "%FRONTEND%" --silent
+    npm install --prefix "%FRONTEND%"
     if errorlevel 1 (
         echo.
         echo  [ERROR] npm install failed. Try running manually:
@@ -116,60 +119,25 @@ echo.
 :: START BACKEND
 :: ============================================================
 echo  Starting backend on http://localhost:%BACKEND_PORT% ...
-start "RoadSoS Backend [:%BACKEND_PORT%]" cmd /k "title RoadSoS Backend [:%BACKEND_PORT%] && cd /d "%BACKEND%" && python -m uvicorn app.main:app --host 0.0.0.0 --port %BACKEND_PORT% --log-level info"
+start "RoadSoS Backend" cmd /k "title RoadSoS Backend && cd /d "%BACKEND%" && python -m uvicorn app.main:app --host 0.0.0.0 --port %BACKEND_PORT% --log-level info"
 
-:: Wait and verify backend is up (poll /health up to 20s)
-echo  Waiting for backend to be ready...
-set "BACKEND_READY=0"
-for /l %%i in (1,1,20) do (
-    if "!BACKEND_READY!"=="0" (
-        timeout /t 1 /nobreak >nul
-        curl -s -o nul -w "%%{http_code}" http://localhost:%BACKEND_PORT%/health 2>nul | findstr "200" >nul 2>&1
-        if not errorlevel 1 (
-            set "BACKEND_READY=1"
-            echo  [OK] Backend is up ^(%%i s^)
-        )
-    )
-)
+:: Wait a fixed time for backend to start
+echo  Waiting for backend to start (15 seconds)...
+timeout /t 15 /nobreak >nul
 
-if "!BACKEND_READY!"=="0" (
-    echo.
-    echo  [WARNING] Backend did not respond within 20 seconds.
-    echo  Check the "RoadSoS Backend" window for error messages.
-    echo  Common fixes:
-    echo    - Run: pip install -r backend\requirements.txt
-    echo    - Check backend\.env exists
-    echo.
-    echo  Continuing anyway - frontend will retry the connection...
-    echo.
-)
+:: Quick check if backend is up
+powershell -command "try { $r = Invoke-WebRequest -Uri 'http://localhost:%BACKEND_PORT%/health' -UseBasicParsing -TimeoutSec 3; if ($r.StatusCode -eq 200) { write-host '[OK] Backend is running' } else { write-host '[WARN] Backend may not be ready yet' } } catch { write-host '[WARN] Backend health check failed - continuing anyway' }"
 
 :: ============================================================
 :: START FRONTEND
 :: ============================================================
+echo.
 echo  Starting frontend on http://localhost:%FRONTEND_PORT% ...
-start "RoadSoS Frontend [:%FRONTEND_PORT%]" cmd /k "title RoadSoS Frontend [:%FRONTEND_PORT%] && npm run dev --prefix "%FRONTEND%""
+start "RoadSoS Frontend" cmd /k "title RoadSoS Frontend && cd /d "%FRONTEND%" && npm run dev"
 
-:: Wait for frontend (poll up to 15s)
-echo  Waiting for frontend to be ready...
-set "FRONTEND_READY=0"
-for /l %%i in (1,1,15) do (
-    if "!FRONTEND_READY!"=="0" (
-        timeout /t 1 /nobreak >nul
-        curl -s -o nul -w "%%{http_code}" http://localhost:%FRONTEND_PORT% 2>nul | findstr "200" >nul 2>&1
-        if not errorlevel 1 (
-            set "FRONTEND_READY=1"
-            echo  [OK] Frontend is up ^(%%i s^)
-        )
-    )
-)
-
-if "!FRONTEND_READY!"=="0" (
-    echo.
-    echo  [WARNING] Frontend did not respond within 15 seconds.
-    echo  Check the "RoadSoS Frontend" window for error messages.
-    echo.
-)
+:: Wait a fixed time for frontend to start
+echo  Waiting for frontend to start (10 seconds)...
+timeout /t 10 /nobreak >nul
 
 :: ============================================================
 :: OPEN BROWSER
@@ -196,17 +164,19 @@ echo   DEMO MODE is ON - crashes auto-generate every 45 seconds
 echo.
 echo  ============================================================
 echo.
-echo   Two server windows are running in the background.
-echo   Close them (or press Ctrl+C inside them) to stop the servers.
+echo   Opening browser...
 echo.
 
-if "!FRONTEND_READY!"=="1" (
-    echo  Opening browser...
-    timeout /t 1 /nobreak >nul
-    start "" "http://localhost:5173"
-) else (
-    echo  [NOTE] Frontend may still be starting. Open http://localhost:5173 manually.
-)
+:: Always try to open the browser
+timeout /t 2 /nobreak >nul
+start "" "http://localhost:5173"
 
+:: Also open API docs as a fallback
+timeout /t 1 /nobreak >nul
+start "" "http://localhost:8000/api/docs"
+
+echo.
+echo   Two server windows are running in the background.
+echo   Close them to stop the servers.
 echo.
 pause

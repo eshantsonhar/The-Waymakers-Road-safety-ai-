@@ -16,7 +16,7 @@ export interface ActiveRoute {
   currentLon: number;
   heading: number;
   speedKmh: number;
-  // Route geometry
+  // Route geometry — store both phases' geometry for full route display
   routeToScene: [number, number][];      // [lat, lon] pairs
   routeToHospital: [number, number][];   // [lat, lon] pairs
   routeSource: string;                   // 'osrm' | 'straight_line'
@@ -30,6 +30,23 @@ export interface ActiveRoute {
   hospitalSelectionReason: string;
   hospitalLat: number;
   hospitalLon: number;
+  // Route label for legend
+  label: string;
+}
+
+// ── Route reconstruction type from state snapshot ────────────────────────────
+export interface RouteReconstruction {
+  ambulance_id: string;
+  incident_id: string;
+  incident_number: string;
+  route_type: string;
+  geometry: [number, number][];
+  current_lat: number;
+  current_lon: number;
+  heading: number;
+  progress: number;
+  hospital_name: string;
+  hospital_id: string;
 }
 
 interface RoadSoSState {
@@ -55,6 +72,8 @@ interface RoadSoSState {
   activeRoutes: Record<string, ActiveRoute>;
   setActiveRoute: (ambulanceId: string, route: ActiveRoute) => void;
   updateRoutePosition: (ambulanceId: string, lat: number, lon: number, heading: number, speed: number, progress: number, eta: number, phase: string) => void;
+  // Route reconstruction from snapshot
+  setRoutesFromReconstruction: (routes: RouteReconstruction[], ambulances: Ambulance[], incidents: Incident[]) => void;
   removeRoute: (ambulanceId: string) => void;
 
   // Hospitals
@@ -179,6 +198,41 @@ export const useStore = create<RoadSoSState>((set) => ({
           },
         },
       };
+    }),
+  setRoutesFromReconstruction: (routes, ambulances, incidents) =>
+    set((state) => {
+      const activeRoutes: Record<string, ActiveRoute> = {};
+      for (const rr of routes) {
+        const amb = ambulances.find(a => a.id === rr.ambulance_id);
+        const inc = incidents.find(i => i.id === rr.incident_id);
+        const isToHospital = rr.route_type === 'to_hospital';
+        activeRoutes[rr.ambulance_id] = {
+          ambulanceId: rr.ambulance_id,
+          vehicleNumber: amb?.vehicle_number ?? rr.ambulance_id,
+          ambulanceType: amb?.ambulance_type ?? 'ALS',
+          incidentId: rr.incident_id,
+          incidentNumber: rr.incident_number,
+          currentLat: rr.current_lat,
+          currentLon: rr.current_lon,
+          heading: rr.heading,
+          speedKmh: amb?.speed_kmh ?? 0,
+          routeToScene: isToHospital ? [] : rr.geometry,
+          routeToHospital: isToHospital ? rr.geometry : (inc?.route_to_hospital ?? []),
+          routeSource: 'osrm',
+          phase: isToHospital ? 'to_hospital' : 'to_scene',
+          routeProgress: rr.progress,
+          etaMinutes: isToHospital
+            ? (amb?.eta_to_hospital_minutes ?? 0)
+            : (amb?.eta_to_scene_minutes ?? 0),
+          hospitalId: rr.hospital_id,
+          hospitalName: rr.hospital_name,
+          hospitalSelectionReason: inc?.hospital_selection_reason ?? '',
+          hospitalLat: 0,
+          hospitalLon: 0,
+          label: `${amb?.call_sign ?? 'AMB'} → ${rr.hospital_name}`,
+        };
+      }
+      return { activeRoutes };
     }),
   removeRoute: (ambulanceId) =>
     set((state) => {
