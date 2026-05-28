@@ -3,12 +3,19 @@
 # ============================================================
 
 # ============================================================
-# KIRO IDE - MUST IGNORE
+# AI EDITOR & AGENT ARTIFACTS - MUST IGNORE
 # ============================================================
 .kiro/
 .kiro/**
 **/.kiro/
 **/.kiro/**
+.qodo/
+.qodo/**
+**/.qodo/
+**/.qodo/**
+prompt_logs/
+agent_workspace/
+*.kiro
 
 # ============================================================
 # Environment Variables & Secrets
