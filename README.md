@@ -1,644 +1,674 @@
-# 🚨 RoadSoS — AI-Assisted Emergency Response & Road Accident Intelligence Platform
+# 🚨 RoadSoS — AI-Powered Emergency Response Intelligence Platform
 
-> **Hackathon Prototype** | Localhost-Only | Optimized for Indian Road Conditions
+> **One-Click Hackathon Demo** | Zero Manual Setup | Bangalore, India
 
-[![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green?logo=fastapi)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18.3-cyan?logo=react)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?logo=typescript)](https://typescriptlang.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+PostGIS-blue?logo=postgresql)](https://postgresql.org)
-[![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)](https://docker.com)
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.111-green?logo=fastapi)
+![React](https://img.shields.io/badge/React-18.3-cyan?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue?logo=typescript)
+![Leaflet](https://img.shields.io/badge/Leaflet-1.9-green?logo=leaflet)
+![PostGIS](https://img.shields.io/badge/PostGIS-3.3-blue?logo=postgresql)
+![License](https://img.shields.io/badge/License-MIT-red)
+
+---
+
+**Live Demo** → [localhost:5173](http://localhost:5173) (after one-click setup)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+1. [One-Click Setup](#-one-click-setup)
+2. [What is RoadSoS?](#-what-is-roadsos)
+3. [System Architecture](#-system-architecture)
+4. [Key Features](#-key-features)
+5. [Data Flow](#-data-flow)
+6. [The 3 UIs](#-the-3-uis)
+7. [Running the System](#-running-the-system)
+8. [Tech Stack](#-tech-stack)
+9. [Project Structure](#-project-structure)
+10. [API Documentation](#-api-documentation)
+11. [Hardware Module](#-hardware-module)
+12. [Troubleshooting](#-troubleshooting)
+13. [Future Extensions](#-future-extensions)
+
+---
+
+## ⚡ ONE-CLICK SETUP
+
+### Prerequisites (install once)
+
+| Dependency | Minimum Version | Download |
+|-----------|----------------|----------|
+| Python | 3.11+ | [python.org](https://python.org) |
+| Node.js | 20+ | [nodejs.org](https://nodejs.org) |
+| npm | comes with Node.js | - |
+
+### Launch RoadSoS
+
+```bash
+# 1. Double-click this file in the project root:
+START_ROADSOS.bat
+```
+
+**That's it.** The script automates everything:
+
+| Step | Action |
+|-----|--------|
+| [1/7] | Detects Python, Node.js, npm |
+| [2/7] | Creates Python virtual environment |
+| [3/7] | Installs all Python packages (FastAPI, httpx, etc.) |
+| [4/7] | Installs all frontend packages (React, Leaflet, etc.) |
+| [5/7] | Clears any existing processes on ports 8000 and 5173 |
+| [6/7] | Starts FastAPI backend → waits for health check OK |
+| [7/7] | Opens http://localhost:5173 in your browser |
+
+**Result:** A fully operational emergency command center with:
+- Live map showing Bangalore road network
+- Auto-generating accidents every 45 seconds
+- Ambulances moving along real OSM roads
+- Hospital intelligence ranking system
+- Risk heatmap overlays
+- Mobile sensor telemetry dashboard
+
+> **No Docker required. No PostgreSQL required. No API keys required.**
+> The system runs entirely in memory with demo mode.
 
 ---
 
 ## 🎯 What is RoadSoS?
 
-RoadSoS is a **full-stack AI-powered emergency response platform** that addresses India's road safety crisis — the country with the highest road accident fatalities in the world (1,68,491 deaths in 2022 per MoRTH data).
+RoadSoS is a **full-stack AI-powered emergency response intelligence platform** built for the Road Safety Hackathon.
 
-The platform provides:
-- **Real-time crash detection** from vehicle sensor data
-- **Intelligent emergency coordination** with automated ambulance dispatch
-- **AI-powered hospital routing** using multi-factor suitability scoring
-- **Predictive risk analytics** with ML-generated danger heatmaps
-- **Live command center dashboard** for emergency operators
-- **Citizen mobile interface** for SOS triggering and ambulance tracking
-- **Admin analytics dashboard** for road safety administrators
+India loses **1 life every 3 minutes** to road accidents (1,68,491 fatalities in 2022). The average emergency response time in Indian cities is **15-20 minutes** — far too slow for trauma victims where every minute counts.
 
----
+RoadSoS solves this by providing:
 
-## 🏗️ Architecture
+| Problem | RoadSoS Solution |
+|---------|-----------------|
+| 🚨 Slow accident reporting | Automatic crash detection from vehicle sensors |
+| 🚑 Poor ambulance routing | OSM-based road-following routes + real-time tracking |
+| 🏥 Wrong hospital selection | AI-powered 7-factor hospital ranking engine |
+| 🗺️ No situational awareness | Live command center with all resources visible |
+| 📱 No citizen connection | Mobile telemetry + SOS + ambulance ETA tracking |
+| ⚠️ No preventive intelligence | ML-based risk heatmaps and blackspot prediction |
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        RoadSoS Platform                          │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                   │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐  │
-│  │  Command     │  │  Citizen     │  │  Admin Analytics     │  │
-│  │  Center      │  │  Interface   │  │  Dashboard           │  │
-│  │  Dashboard   │  │  (Mobile)    │  │                      │  │
-│  └──────┬───────┘  └──────┬───────┘  └──────────┬───────────┘  │
-│         │                 │                       │              │
-│         └─────────────────┼───────────────────────┘              │
-│                           │ React + Vite + TypeScript            │
-│                           │ TailwindCSS + Framer Motion          │
-│                           │ Leaflet Maps + Recharts              │
-│                           │ Zustand State Management             │
-│                           │                                      │
-│  ┌────────────────────────▼──────────────────────────────────┐  │
-│  │                   WebSocket Layer                          │  │
-│  │              Real-time bidirectional events                │  │
-│  └────────────────────────┬──────────────────────────────────┘  │
-│                           │                                      │
-│  ┌────────────────────────▼──────────────────────────────────┐  │
-│  │                  FastAPI Backend                           │  │
-│  │                                                            │  │
-│  │  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐  │  │
-│  │  │  Accident   │  │  Emergency   │  │  Hospital       │  │  │
-│  │  │  Detection  │  │  Coord.      │  │  Intelligence   │  │  │
-│  │  │  Engine     │  │  Engine      │  │  Engine         │  │  │
-│  │  └─────────────┘  └──────────────┘  └─────────────────┘  │  │
-│  │                                                            │  │
-│  │  ┌─────────────┐  ┌──────────────┐  ┌─────────────────┐  │  │
-│  │  │  Risk       │  │  Notification│  │  Demo           │  │  │
-│  │  │  Prediction │  │  Engine      │  │  Simulator      │  │  │
-│  │  │  Engine     │  │  (SMS/Push)  │  │                 │  │  │
-│  │  └─────────────┘  └──────────────┘  └─────────────────┘  │  │
-│  └────────────────────────┬──────────────────────────────────┘  │
-│                           │ SQLAlchemy ORM + AsyncPG             │
-│  ┌────────────────────────▼──────────────────────────────────┐  │
-│  │              PostgreSQL 15 + PostGIS 3.3                   │  │
-│  │                                                            │  │
-│  │  incidents │ hospitals │ ambulances │ road_segments        │  │
-│  │  users │ emergency_contacts │ risk_zones │ accident_events │  │
-│  └────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
+### What makes RoadSoS different from typical hackathon projects?
+
+- **Real road geometry** from OpenStreetMap (no fake lines)
+- **OSRM-based routing** on actual road network
+- **Production-grade architecture** with WebSocket real-time layer
+- **Mobile sensor simulation** with realistic accelerometer/gyro
+- **Hardware telemetry module** for IoT integration
+- **3 complete UIs** — Command Center, Citizen App, Admin Dashboard
+- **One-click startup** — zero manual configuration
 
 ---
 
-## 🚀 Quick Start
+## 🏗️ System Architecture
 
-### Prerequisites
-- Docker Desktop (recommended) OR
-- Python 3.11+, Node.js 20+, PostgreSQL 15 with PostGIS
-
-### Option 1: Docker Compose (Recommended)
-
-```bash
-# Clone the repository
-git clone <your-repo-url>
-cd road-safety-hackathon
-
-# Copy environment file
-cp backend/.env.example backend/.env
-
-# Start everything
-docker-compose up --build
-
-# Access the platform:
-# Frontend:  http://localhost:5173
-# Backend:   http://localhost:8000
-# API Docs:  http://localhost:8000/api/docs
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        ROADSOS PLATFORM ARCHITECTURE                        │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────┐  ┌─────────────────────┐  ┌───────────────────┐   │
+│  │   COMMAND CENTER    │  │   CITIZEN INTERFACE  │  │ ADMIN ANALYTICS   │   │
+│  │                     │  │                      │  │                   │   │
+│  │ • Live Map (Leaflet)│  │ • SOS Button         │  │ • Trend Charts    │   │
+│  │ • Incident Feed     │  │ • Crash Simulator    │  │ • District Stats  │   │
+│  │ • Ambulance Track   │  │ • Sensor Telemetry   │  │ • Risk Analytics  │   │
+│  │ • Hospital Status   │  │ • Ambulance ETA      │  │ • Response Times  │   │
+│  └──────────┬──────────┘  └──────────┬───────────┘  └────────┬──────────┘   │
+│             │                       │                        │              │
+│             └───────────────────────┼────────────────────────┘              │
+│                                     │  React 18 + TypeScript + Vite        │
+│                                     │  TailwindCSS + Framer Motion         │
+│                                     │  Leaflet + OpenStreetMap             │
+│                                     │  Zustand State Management            │
+│  ┌──────────────────────────────────▼────────────────────────────────────┐ │
+│  │                      WEBSOCKET LAYER                                   │ │
+│  │              Real-time bidirectional event streaming                    │ │
+│  │   Events: INCIDENT_CREATED │ AMBULANCE_POSITION_UPDATE │               │ │
+│  │           HOSPITAL_STATUS  │ EMERGENCY_ALERT │ HARDWARE_TELEMETRY      │ │
+│  └──────────────────────────────────┬────────────────────────────────────┘ │
+│                                     │                                      │
+│  ┌──────────────────────────────────▼────────────────────────────────────┐ │
+│  │                      FASTAPI BACKEND                                   │ │
+│  │                                                                        │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │ │
+│  │  │  Accident    │  │  Emergency   │  │  Hospital    │  │  Risk     │ │ │
+│  │  │  Detection   │  │  Dispatch    │  │  Intelligence│  │  Predict  │ │ │
+│  │  │  Engine      │  │  Engine      │  │  Engine      │  │  Engine   │ │ │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘  └───────────┘ │ │
+│  │                                                                        │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌───────────┐ │ │
+│  │  │  Geospatial  │  │  Route       │  │  Telemetry   │  │  Demo     │ │ │
+│  │  │  Engine      │  │  Service     │  │  Ingestion   │  │  Simulator│ │ │
+│  │  │  (OSM)       │  │  (OSRM)      │  │  (HW/Mobile) │  │           │ │ │
+│  │  └──────────────┘  └──────────────┘  └──────────────┘  └───────────┘ │ │
+│  └──────────────────────────────────┬────────────────────────────────────┘ │
+│                                     │                                      │
+│  ┌──────────────────────────────────▼────────────────────────────────────┐ │
+│  │                     IN-MEMORY STATE STORE                              │ │
+│  │   incidents │ ambulances │ hospitals │ active_routes │ telemetry_buf  │ │
+│  └────────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────────┐│
+│  │                    EXTERNAL DATA SOURCES                                ││
+│  │  OpenStreetMap (Overpass API)  ←  Road Geometry                        ││
+│  │  OSRM Router (public)          ←  Road-following routes                ││
+│  │  Hardware Module (simulated)   ←  Telemetry packets                    ││
+│  │  Mobile Sensor Simulator       ←  Sensor data                          ││
+│  └─────────────────────────────────────────────────────────────────────────┘│
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Option 2: Manual Setup
+---
 
-#### Backend Setup
+## ✨ Key Features
+
+### 1. 🗺️ Real Road Routing
+- Routes computed using **OSRM** (Open Source Routing Machine) on actual road networks
+- No straight-line approximations — ambulances follow real roads
+- Falls back to straight-line if OSRM is unavailable
+
+### 2. 🚑 Intelligent Ambulance Dispatch
+- Nearest available ambulance is automatically assigned
+- Continuous position tracking with smooth interpolation along route
+- Real-time ETA updates via WebSocket push
+- Phase tracking: `to_scene` → `at_scene` → `to_hospital` → `at_hospital`
+
+### 3. 🏥 AI Hospital Ranking
+- 7-factor scoring: trauma capability (25%), ICU availability (20%), travel time (20%), distance (15%), hospital load (10%), blood availability (5%), specialist availability (5%)
+- ICU occupancy > 90% triggers -20 point penalty
+- CRITICAL severity incidents exclude non-trauma hospitals
+
+### 4. ⚡ Real-Time WebSocket Layer
+- All state changes broadcast to all connected clients
+- Connection recovery with automatic state snapshot reconstruction
+- Event types: incidents, ambulances, hospitals, notifications, telemetry
+
+### 5. 📱 Mobile Sensor Telemetry
+- Realistic accelerometer, gyroscope, GPS, and speed simulation
+- Crash/pothole/braking event detection
+- Live dashboard with circular gauges and sparkline history
+- SOS trigger with configurable impact force
+
+### 6. 🔥 Risk Heatmap from Real OSM Data
+- Road segments fetched from **OpenStreetMap Overpass API**
+- Risk scores derived from: accident density, curvature index, intersection density, road type
+- Color-coded: Red (80+) → Orange (60+) → Yellow (40+) → Green (<20)
+- **No random lines** — all geometry follows real roads
+
+### 7. 🔧 Hardware Telemetry Module
+- Full embedded firmware for **Raspberry Pi Pico 2W** with SIM7600E-H and MPU-9250
+- Laptop simulation mode for demo
+- Same backend pipeline as mobile sensor data
+
+---
+
+## 🔄 Data Flow
+
+```
+ACCIDENT SCENARIO
+═════════════════
+
+  1. Demo Simulator triggers crash at Bangalore hotspot
+     │
+     ▼
+  2. Incident created with severity, location, classification
+     │
+     ▼
+  3. Nearest available ambulance found from station
+     │
+     ▼
+  4. OSRM computes road-following route: station → scene
+     │
+     ▼
+  5. Hospital Intelligence Engine ranks hospitals by 7 factors
+     │
+     ▼
+  6. Ambulance dispatches → WebSocket broadcasts to all UIs
+     │
+     ▼
+  7. Ambulance position updates every second along route
+     │
+     ├──→ Command Center: Map marker moves + route polyline
+     ├──→ Citizen Interface: ETA countdown updates
+     └──→ Admin Dashboard: Response time metrics refresh
+     │
+     ▼
+  8. Ambulance arrives at scene (pauses 3-6 seconds)
+     │
+     ▼
+  9. Transitions to hospital phase: scene → hospital
+     │
+     ▼
+  10. Arrives at hospital → incident resolved → ambulance available
+     │
+     ▼
+  11. Hospital load updated (ICU bed decremented)
+
+
+HARDWARE/MOBILE TELEMETRY FLOW
+═══════════════════════════════
+
+  Device (mobile/hardware) → POST /api/telemetry/hardware
+     │
+     ├── Store raw telemetry in buffer
+     ├── Update device position
+     ├── Run crash detection on accelerometer data
+     │
+     └── If crash detected:
+           ├── Create incident (same pipeline as demo)
+           ├── Dispatch nearest ambulance
+           └── Broadcast via WebSocket
+
+
+WEBSOCKET SYNCHRONIZATION
+══════════════════════════
+
+  Client connects → STATE_SNAPSHOT with full state
+     │
+     ▼
+  Server pushes events in real-time
+     │
+     ▼
+  On disconnect/reconnect → new STATE_SNAPSHOT
+     │
+     ▼
+  Client reconstructs all active routes + incidents + ambulances
+```
+
+---
+
+## 🖥️ The 3 UIs
+
+### 1. Command Center (default view)
+
+The main operational dashboard for emergency coordinators.
+
+| Component | Description |
+|-----------|-------------|
+| 🗺️ Live Map | Leaflet map with dark CartoDB tiles, incident markers, ambulance positions, hospital icons, route polylines, risk heatmap |
+| 📋 Incident Feed | Scrollable list of all active incidents with severity badges |
+| 🚑 Active Routes | Real-time ambulance tracking with phase, ETA, speed |
+| 🏥 Hospital Panel | ICU availability, load percentage, alert status |
+| 📊 Stats Bar | Active incidents count, units deployed, response times |
+| 🎯 Focus Mode | Click an incident to focus its route (fades others) |
+
+### 2. Citizen Interface
+
+Mobile-first emergency app for citizens.
+
+| Feature | Description |
+|---------|-------------|
+| 🆘 SOS Button | 3-second countdown then dispatch (with cancel) |
+| 📱 Sensor Telemetry Dashboard | Live accelerometer, gyroscope, GPS, speed gauges |
+| 💥 Crash Simulator | Trigger demo crashes: Minor/Moderate/Severe/Rollover |
+| 🚑 Ambulance Tracker | ETA countdown, distance remaining, elapsed time |
+| 🏥 Nearby Hospitals | Ranked list with distance, ETA, ICU availability |
+| 👥 Emergency Contacts | Notify pre-configured contacts |
+| 📶 Offline Mode | Works with cached data when disconnected |
+
+### 3. Admin Dashboard
+
+Analytics view for road safety administrators.
+
+| Feature | Description |
+|---------|-------------|
+| 📈 Trend Charts | Accident trends over time |
+| 📊 District Stats | Per-district breakdown with blackspot counts |
+| 🔥 Risk Analytics | Infrastructure alerts, segment risk distribution |
+| ⏱️ Response Metrics | Average, fastest, and slowest response times |
+| 🗺️ District Map | Color-coded risk visualization by district |
+
+---
+
+## 🚀 Running the System
+
+### How `START_ROADSOS.bat` Works Internally
+
+```
+START_ROADSOS.bat
+│
+├── 1. DETECT SYSTEM
+│   ├── python --version  (must be 3.11+)
+│   ├── node --version    (must be 20+)
+│   └── npm --version
+│
+├── 2. SETUP PYTHON ENV
+│   ├── Create backend\.venv if not exists
+│   ├── Activate virtual environment
+│   └── Upgrade pip
+│
+├── 3. INSTALL BACKEND
+│   ├── Check existing packages (fastapi, uvicorn, httpx, websockets)
+│   ├── pip install -r backend/requirements.txt
+│   └── Verify critical packages
+│
+├── 4. INSTALL FRONTEND
+│   ├── Check node_modules exists
+│   ├── npm install (if needed)
+│   └── Verify Vite is installed
+│
+├── 5. CLEAR PORTS
+│   ├── Kill any processes on port 8000
+│   └── Kill any processes on port 5173
+│
+├── 6. START SERVICES
+│   ├── Start backend:  uvicorn app.main:app --port 8000
+│   ├── Health check retry loop (up to 12 attempts, 2s apart)
+│   ├── Start frontend: npm run dev
+│   └── Health check retry loop
+│
+└── 7. LAUNCH BROWSER
+    ├── Open http://localhost:5173
+    ├── Open http://localhost:8000/api/docs
+    └── Show success screen
+```
+
+### Ports Used
+
+| Port | Service | URL |
+|------|---------|-----|
+| 8000 | FastAPI Backend | [http://localhost:8000](http://localhost:8000) |
+| 5173 | Vite Frontend | [http://localhost:5173](http://localhost:5173) |
+
+### Manual Start (if bat fails)
+
 ```bash
+# Terminal 1: Backend
 cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-# Copy and configure environment
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
-
-# Start the backend
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-#### Frontend Setup
-```bash
+# Terminal 2: Frontend
 cd frontend
-
-# Install dependencies
 npm install
-
-# Start development server
 npm run dev
 ```
-
-#### Database Setup
-```bash
-# Create PostgreSQL database with PostGIS
-psql -U postgres -c "CREATE DATABASE roadsos_db;"
-psql -U postgres -d roadsos_db -c "CREATE EXTENSION postgis;"
-
-# Run seed script
-cd scripts
-python seed.py
-```
-
----
-
-## 🎮 Demo Mode
-
-RoadSoS ships with `DEMO_MODE=true` by default, which:
-
-1. **Auto-generates crashes** every 45 seconds at Bangalore hotspots
-2. **Simulates ambulance movement** with real-time GPS updates every 5 seconds
-3. **Fluctuates hospital loads** to simulate real-world capacity changes
-4. **Sends WebSocket events** to all connected dashboard clients
-
-### Running Demo Scenarios
-
-```bash
-# Run the demo scenario generator
-python scripts/demo_scenario.py
-
-# Available scenarios:
-# 1. Rush Hour Multi-Crash (3 simultaneous incidents)
-# 2. Highway Rollover (critical severity)
-# 3. Chain Collision (multiple vehicles)
-```
-
-### Citizen App Demo
-
-In the Citizen Interface, use the **Demo Crash Simulator** panel to trigger:
-- Minor Collision
-- Moderate Crash
-- Severe Crash
-- Rollover
-
----
-
-## 📡 API Documentation
-
-Full interactive docs available at: `http://localhost:8000/api/docs`
-
-### Key Endpoints
-
-#### Accident Detection
-```
-POST /api/detection/analyze
-  Body: { device_id, accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z,
-          latitude, longitude, speed_kmh, sound_db }
-  Returns: { crash_probability_score, severity, confidence_level,
-             event_classification, is_crash, action_required }
-
-POST /api/detection/simulate/{scenario}
-  Scenarios: NORMAL_BRAKING, POTHOLE, SPEED_BREAKER, MINOR_COLLISION,
-             MODERATE_CRASH, SEVERE_CRASH, ROLLOVER
-```
-
-#### Incidents
-```
-POST /api/incidents/          Create new incident
-GET  /api/incidents/          List incidents (with filters)
-GET  /api/incidents/stats     Aggregate statistics
-GET  /api/incidents/{id}      Get specific incident
-PATCH /api/incidents/{id}     Update incident
-POST /api/incidents/{id}/resolve  Resolve incident
-```
-
-#### Hospitals
-```
-POST /api/hospitals/rank      Rank hospitals for incident
-GET  /api/hospitals/          List all hospitals
-GET  /api/hospitals/stats     Hospital statistics
-GET  /api/hospitals/{id}      Get specific hospital
-```
-
-#### Ambulances
-```
-GET  /api/ambulances/         List all ambulances
-GET  /api/ambulances/nearby   Find nearest available ambulances
-GET  /api/ambulances/stats    Ambulance statistics
-PATCH /api/ambulances/{id}/position  Update GPS position
-```
-
-#### Risk Prediction
-```
-GET  /api/risk/heatmap        GeoJSON danger heatmap
-GET  /api/risk/blackspots     Active blackspot list
-GET  /api/risk/segments       Road segments with risk scores
-GET  /api/risk/analytics      Risk analytics summary
-```
-
-#### Analytics
-```
-GET  /api/analytics/trends              Accident trend data
-GET  /api/analytics/response-efficiency Response time metrics
-GET  /api/analytics/district-stats      District-wise statistics
-GET  /api/analytics/prediction-metrics  ML model performance
-GET  /api/analytics/infrastructure-insights  Road maintenance priorities
-```
-
----
-
-## 🔌 WebSocket Events
-
-Connect to: `ws://localhost:8000/ws/{client_id}`
-
-### Event Schema
-```json
-{
-  "type": "EVENT_TYPE",
-  "channel": "incidents|ambulances|hospitals|risk_zones|notifications",
-  "payload": { ... },
-  "timestamp": "2024-01-01T00:00:00Z"
-}
-```
-
-### Event Types
-
-| Event | Channel | Description |
-|-------|---------|-------------|
-| `STATE_SNAPSHOT` | general | Initial state on connection |
-| `INCIDENT_CREATED` | incidents | New crash detected |
-| `INCIDENT_UPDATED` | incidents | Status/assignment change |
-| `INCIDENT_RESOLVED` | incidents | Incident closed |
-| `AMBULANCE_POSITION_UPDATE` | ambulances | GPS position update |
-| `AMBULANCE_STATUS_CHANGE` | ambulances | Status change |
-| `AMBULANCE_ASSIGNED` | ambulances | Assigned to incident |
-| `HOSPITAL_STATUS_UPDATE` | hospitals | Load/availability change |
-| `EMERGENCY_ALERT` | notifications | Critical alert |
-| `HEARTBEAT` | general | Keep-alive ping |
-
-### Sample WebSocket Messages
-
-```json
-// Incident Created
-{
-  "type": "INCIDENT_CREATED",
-  "channel": "incidents",
-  "payload": {
-    "id": "uuid",
-    "incident_number": "INC-BLR-20240101-0001",
-    "latitude": 12.9177,
-    "longitude": 77.6228,
-    "severity": "HIGH",
-    "status": "DETECTED",
-    "crash_probability_score": 0.89,
-    "address": "Near Silk Board Junction, Bangalore"
-  },
-  "timestamp": "2024-01-01T12:00:00Z"
-}
-
-// Ambulance Position Update
-{
-  "type": "AMBULANCE_POSITION_UPDATE",
-  "channel": "ambulances",
-  "payload": {
-    "ambulances": [
-      {
-        "ambulance_id": "uuid",
-        "latitude": 12.9200,
-        "longitude": 77.6250,
-        "heading": 45.0,
-        "speed_kmh": 65.0,
-        "status": "EN_ROUTE_TO_SCENE"
-      }
-    ]
-  },
-  "timestamp": "2024-01-01T12:00:05Z"
-}
-```
-
----
-
-## 🧠 AI/ML Components
-
-### Accident Detection Engine
-
-**Algorithm**: Multi-signal weighted scoring with sliding window filter
-
-**Inputs**:
-- Accelerometer (X, Y, Z axes) — impact force detection
-- Gyroscope (X, Y, Z axes) — rollover detection
-- GPS speed — sudden deceleration
-- Sound intensity — impact sound detection
-
-**Thresholds**:
-- Crash confirmed: probability ≥ 0.75
-- Suspected crash: 0.40 ≤ probability < 0.75
-- False positive filter: 3-reading sliding window
-
-**Event Classifications**:
-- `CRASH`, `ROLLOVER_CRASH`, `HIGH_IMPACT_CRASH`
-- `SUSPECTED_CRASH`
-- `NORMAL_BRAKING`, `POTHOLE`, `SPEED_BREAKER`, `NORMAL`
-
-### Hospital Intelligence Engine
-
-**Algorithm**: Weighted multi-factor scoring (0-100)
-
-| Factor | Weight |
-|--------|--------|
-| Trauma capability | 25% |
-| ICU availability | 20% |
-| Travel time (with traffic) | 20% |
-| Distance | 15% |
-| Hospital load | 10% |
-| Blood availability | 5% |
-| Specialist availability | 5% |
-
-**Special rules**:
-- ICU occupancy > 90% → -20 point penalty
-- CRITICAL severity → exclude non-trauma hospitals
-
-### Risk Prediction Engine
-
-**Algorithm**: Rule-based scoring + Random Forest Classifier
-
-**Input features**:
-1. Historical accident frequency
-2. Road surface condition
-3. Rainfall intensity
-4. Ambient lighting level
-5. Traffic density
-6. Road curvature index
-7. Pothole density
-
-**Output**: Risk score (0-100) + prediction confidence + blackspot classification
-
----
-
-## 🗄️ Database Schema
-
-```sql
--- Core tables with PostGIS geometry support
-
-incidents (
-  id UUID PRIMARY KEY,
-  location GEOMETRY(POINT, 4326),  -- PostGIS
-  severity ENUM(LOW, MEDIUM, HIGH, CRITICAL),
-  status ENUM(DETECTED, CONFIRMED, DISPATCHED, ...),
-  crash_probability_score FLOAT,
-  timeline JSONB,
-  ...
-)
-
-hospitals (
-  id UUID PRIMARY KEY,
-  location GEOMETRY(POINT, 4326),
-  trauma_level INTEGER,
-  total_icu_beds INTEGER,
-  available_icu_beds INTEGER,
-  available_blood_types JSONB,
-  active_specialists JSONB,
-  ...
-)
-
-ambulances (
-  id UUID PRIMARY KEY,
-  location GEOMETRY(POINT, 4326),
-  status ENUM(AVAILABLE, EN_ROUTE_TO_SCENE, ...),
-  current_route JSONB,
-  ...
-)
-
-road_segments (
-  id UUID PRIMARY KEY,
-  geometry GEOMETRY(LINESTRING, 4326),
-  risk_score FLOAT,
-  is_blackspot BOOLEAN,
-  risk_factors JSONB,
-  ...
-)
-
-accident_events (
-  id UUID PRIMARY KEY,
-  location GEOMETRY(POINT, 4326),
-  severity VARCHAR,
-  sensor_snapshot JSONB,
-  is_historical BOOLEAN,
-  ...
-)
-```
-
----
-
-## 📊 Indian Road Safety Context
-
-### Why RoadSoS Matters
-
-India accounts for **~11% of global road accident deaths** despite having only 1% of the world's vehicles.
-
-**Key statistics (MoRTH 2022)**:
-- 4,61,312 road accidents
-- 1,68,491 fatalities
-- 4,43,366 injured
-- Average: 1 death every 3 minutes
-
-**Karnataka (Bangalore's state)**:
-- 11,131 accidents
-- 5,765 fatalities
-- Bangalore Urban: ~2,800 accidents/year
-
-**Primary causes**:
-1. Over-speeding (66.5% of accidents)
-2. Driving on wrong side (4.7%)
-3. Jumping red lights (2.8%)
-4. Drunk driving (2.3%)
-
-**RoadSoS addresses**:
-- Slow emergency response (avg 15-20 min in Indian cities)
-- Poor hospital routing (nearest ≠ best)
-- Lack of real-time accident intelligence
-- No predictive risk mapping for preventive action
-
----
-
-## 🏆 Hackathon Pitch
-
-### Problem Statement
-India loses 1 life every 3 minutes to road accidents. Emergency response is slow, hospital selection is suboptimal, and there's no real-time intelligence layer for prevention.
-
-### Solution
-RoadSoS is a **full-stack AI platform** that:
-1. **Detects crashes automatically** using vehicle sensor fusion (no manual reporting)
-2. **Dispatches the right ambulance** to the right hospital in seconds
-3. **Predicts danger zones** before accidents happen
-4. **Gives operators real-time intelligence** to coordinate response
-
-### Innovation
-- **Multi-signal crash detection** with false positive filtering
-- **AI hospital routing** with 7-factor suitability scoring
-- **Predictive blackspot mapping** using ML + historical data
-- **Offline-first design** for India's connectivity challenges
-- **Indian-specific data** (Bangalore hotspots, MoRTH statistics)
-
-### Impact Potential
-- Reduce average response time from 15 min → 8 min
-- Improve hospital match accuracy by 40%
-- Enable preventive infrastructure investment
-- Scale to any Indian city with local data
-
-### Technical Excellence
-- Production-grade architecture (FastAPI + React + PostgreSQL/PostGIS)
-- Real-time WebSocket infrastructure
-- Docker containerization for easy deployment
-- Comprehensive API documentation
-- ML-powered risk prediction
-
----
-
-## 🗺️ Future Roadmap
-
-### Phase 1 (MVP - Current)
-- [x] Accident detection engine
-- [x] Emergency coordination
-- [x] Hospital intelligence
-- [x] Risk prediction heatmaps
-- [x] Command center dashboard
-- [x] Citizen interface
-- [x] Admin analytics
-
-### Phase 2 (Production)
-- [ ] Integration with real vehicle OBD-II sensors
-- [ ] SMS gateway integration (MSG91/Twilio)
-- [ ] Integration with 108 ambulance service API
-- [ ] Real-time traffic data (Google Maps/HERE)
-- [ ] Mobile app (React Native)
-- [ ] Multi-city support
-
-### Phase 3 (Scale)
-- [ ] State government integration
-- [ ] NHAI highway monitoring
-- [ ] Insurance company API
-- [ ] Predictive maintenance alerts
-- [ ] AI-powered traffic signal optimization
-- [ ] Drone dispatch for remote areas
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + Vite + TypeScript |
-| Styling | TailwindCSS + Framer Motion |
-| Maps | Leaflet + OpenStreetMap |
-| Charts | Recharts |
-| State | Zustand |
-| Backend | Python FastAPI |
-| WebSockets | FastAPI WebSockets |
-| ORM | SQLAlchemy 2.0 (async) |
-| Database | PostgreSQL 15 + PostGIS 3.3 |
-| ML | scikit-learn + pandas + numpy |
-| Containerization | Docker + docker-compose |
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 18 + TypeScript | UI framework |
+| | Vite 5 | Build tool and dev server |
+| | TailwindCSS | Styling |
+| | Framer Motion | Animations |
+| | Leaflet + react-leaflet | Interactive maps |
+| | OpenStreetMap | Map tile provider |
+| | Zustand | State management |
+| | Lucide React | Icons |
+| **Backend** | Python FastAPI | REST API + WebSocket |
+| | Uvicorn | ASGI server |
+| | httpx | Async HTTP client (OSRM, Overpass) |
+| | Pydantic | Data validation |
+| | python-dotenv | Configuration |
+| **GIS** | Overpass API | Road network fetch |
+| | OSRM (public) | Road-following routes |
+| | Haversine | Distance calculations |
+| **Simulation** | Demo Simulator | Auto-generated incidents |
+| | Mobile Sensor Simulator | Accelerometer/gyro simulation |
+| | Hardware Module | Embedded telemetry simulation |
+| **Hardware** | RPi Pico 2W | Target microcontroller |
+| | MPU-9250 | IMU sensor |
+| | SIM7600E-H | 4G LTE + GPS + SMS |
+| | NEO-M8N | GPS module |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-road-safety-hackathon/
-├── frontend/                    # React + Vite frontend
-│   ├── src/
-│   │   ├── views/               # Main page views
-│   │   │   ├── CommandCenter.tsx    # Operator dashboard
-│   │   │   ├── CitizenInterface.tsx # Citizen app
-│   │   │   └── AdminDashboard.tsx   # Analytics dashboard
-│   │   ├── components/          # Reusable UI components
-│   │   ├── hooks/               # Custom React hooks
-│   │   ├── store/               # Zustand state management
-│   │   └── types/               # TypeScript type definitions
-│   ├── Dockerfile
-│   └── package.json
+RoadSoS/
 │
-├── backend/                     # FastAPI backend
+├── START_ROADSOS.bat               # 🚀 ONE-CLICK LAUNCH
+├── README.md                       # This file
+├── GITHUB_PUSH_CHECKLIST.md         # Pre-publish security guide
+├── .gitignore                      # Strict git exclusion rules
+│
+├── backend/                        # FastAPI Backend
 │   ├── app/
-│   │   ├── main.py              # FastAPI app + WebSocket
-│   │   ├── config.py            # Settings management
-│   │   ├── database.py          # DB connection + init
-│   │   ├── models/              # SQLAlchemy models
-│   │   │   ├── incident.py
-│   │   │   ├── hospital.py
-│   │   │   ├── ambulance.py
-│   │   │   ├── user.py
-│   │   │   ├── road_segment.py
-│   │   │   ├── risk_zone.py
-│   │   │   └── accident_event.py
-│   │   ├── engines/             # Core AI/ML engines
-│   │   │   ├── accident_detection.py
-│   │   │   ├── hospital_intelligence.py
-│   │   │   ├── risk_prediction.py
-│   │   │   └── notification.py
-│   │   ├── api/                 # REST API routes
-│   │   │   ├── detection.py
-│   │   │   ├── incidents.py
-│   │   │   ├── hospitals.py
-│   │   │   ├── ambulances.py
-│   │   │   ├── risk.py
-│   │   │   └── analytics.py
-│   │   ├── websocket/           # WebSocket manager
-│   │   │   └── manager.py
-│   │   └── demo/                # Demo simulator
-│   │       └── simulator.py
-│   ├── Dockerfile
-│   └── requirements.txt
+│   │   ├── main.py                 # App entry + WebSocket endpoint
+│   │   ├── config.py               # Settings (env vars)
+│   │   ├── api/                    # REST API routes
+│   │   │   ├── detection.py        # Accident detection
+│   │   │   ├── incidents.py        # Incident CRUD
+│   │   │   ├── hospitals.py        # Hospital management
+│   │   │   ├── ambulances.py       # Ambulance tracking
+│   │   │   ├── risk.py             # Risk heatmap (REAL OSM data)
+│   │   │   ├── analytics.py        # Analytics endpoints
+│   │   │   ├── routes.py           # Active route management
+│   │   │   └── telemetry.py        # 📡 HARDWARE/MOBILE TELEMETRY
+│   │   ├── geospatial/             # 🌍 REAL OSM ROAD NETWORK
+│   │   │   ├── __init__.py
+│   │   │   └── road_network.py     # Overpass API + risk scoring
+│   │   ├── engines/                # Core AI/ML engines
+│   │   ├── websocket/              # WebSocket manager
+│   │   ├── demo/                   # Demo simulator
+│   │   ├── services/               # Routing service (OSRM)
+│   │   └── models/                 # Data models
+│   ├── requirements.txt
+│   └── .env.example
 │
-├── docker/                      # Docker configuration
-│   └── init-db.sql              # PostGIS initialization
+├── frontend/                       # React + Vite Frontend
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── LiveMap.tsx         # 🗺️ Main map component
+│   │   │   ├── IncidentFeed.tsx    # Incident list
+│   │   │   ├── NavBar.tsx          # 3-UI navigation
+│   │   │   └── ...                 # Other components
+│   │   ├── mobile/                 # 📱 MOBILE SIMULATION
+│   │   │   ├── sensor_simulator.ts # Realistic sensor simulation
+│   │   │   └── MobileTelemetryDashboard.tsx  # Live dashboard UI
+│   │   ├── views/
+│   │   │   ├── CommandCenter.tsx   # Main ops dashboard
+│   │   │   ├── CitizenInterface.tsx # Citizen emergency app
+│   │   │   └── AdminDashboard.tsx  # Analytics dashboard
+│   │   ├── store/                  # Zustand state
+│   │   ├── hooks/                  # WebSocket + API hooks
+│   │   └── types/                  # TypeScript definitions
+│   ├── package.json
+│   └── vite.config.ts
 │
-├── scripts/                     # Utility scripts
-│   ├── seed.py                  # Database seeder
-│   └── demo_scenario.py         # Demo scenario generator
+├── hardware_module_code/           # 🔧 EMBEDDED HARDWARE
+│   ├── main.cpp                    # Pico 2W firmware
+│   ├── sensors/
+│   │   ├── imu_driver.py           # MPU-9250 Python driver
+│   │   └── gps_driver.py           # NEO-M8N GPS driver
+│   ├── network/
+│   │   └── sim7600_handler.py      # SIM7600E-H LTE handler
+│   ├── protocol/
+│   │   └── telemetry_schema.md     # Packet specification
+│   └── simulation_mode/
+│       └── hardware_simulator.py   # Laptop simulator
 │
-├── datasets/                    # Data documentation
-│   └── README.md
-│
-├── .kiro/specs/road-sos/        # Spec documents
-│   ├── requirements.md
-│   └── .config.kiro
-│
-├── docker-compose.yml
-├── .gitignore
-├── README.md
-└── GITHUB_PUSH_CHECKLIST.md
+├── scripts/                        # Utility scripts
+├── docker/                         # Docker config
+└── datasets/                       # Dataset docs
 ```
 
 ---
 
-## 🔧 Configuration
+## 📡 API Documentation
 
-All configuration is via environment variables. See `backend/.env.example` for full list.
+Once running, full interactive docs at: **[http://localhost:8000/api/docs](http://localhost:8000/api/docs)**
 
-Key settings:
+### Core Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Backend health check |
+| `GET` | `/api/status` | System status with all endpoints |
+| `POST` | `/api/detection/analyze` | Analyze crash sensor data |
+| `POST` | `/api/detection/simulate/{scenario}` | Simulate a crash scenario |
+| `GET` | `/api/incidents` | List all incidents |
+| `POST` | `/api/incidents` | Create incident |
+| `GET` | `/api/incidents/stats` | Incident statistics |
+| `GET` | `/api/hospitals` | List hospitals |
+| `POST` | `/api/hospitals/rank` | Rank hospitals for incident |
+| `GET` | `/api/ambulances` | List ambulances |
+| `GET` | `/api/risk/heatmap` | 🔥 Road risk GeoJSON (OSM data) |
+| `GET` | `/api/risk/blackspots` | Blackspot locations |
+| `GET` | `/api/analytics/trends` | Accident trend data |
+| `POST` | `/api/telemetry/hardware` | 📡 Ingest hardware/mobile telemetry |
+| `GET` | `/api/telemetry/devices` | List telemetry devices |
+| `POST` | `/api/telemetry/simulate/crash` | Simulate hardware crash |
+
+### WebSocket
+
+```
+ws://localhost:8000/ws/{client_id}
+```
+
+Auto-generates ID if connected via `ws://localhost:8000/ws`.
+
+---
+
+## 🔧 Hardware Module
+
+The `hardware_module_code/` directory contains a complete embedded system simulation for **Raspberry Pi Pico 2W** with:
+
+### Hardware Target
+
+| Component | Purpose |
+|-----------|---------|
+| Raspberry Pi Pico 2W | Dual-core microcontroller |
+| MPU-9250 | 9-axis IMU (accel + gyro + magnetometer) |
+| SIM7600E-H | 4G LTE modem + GPS receiver + SMS |
+| NEO-M8N | External GPS module (backup) |
+
+### Included Files
+
+| File | Description |
+|------|-------------|
+| `main.cpp` | Full embedded firmware (C++ with Pico SDK) |
+| `sensors/imu_driver.py` | MPU-9250 driver (hardware + simulation) |
+| `sensors/gps_driver.py` | NEO-M8N NMEA parser (hardware + simulation) |
+| `network/sim7600_handler.py` | SIM7600E-H LTE/SMS handler |
+| `protocol/telemetry_schema.md` | JSON + binary packet specifications |
+| `simulation_mode/hardware_simulator.py` | **Run on laptop** for demo |
+
+### Run Hardware Simulator
+
 ```bash
-DEMO_MODE=true                    # Enable demo simulation
-DEMO_CRASH_INTERVAL_SECONDS=45   # How often to generate demo crashes
-CRASH_CONFIRM_THRESHOLD=0.75     # Probability threshold for crash confirmation
-BLACKSPOT_RISK_THRESHOLD=70.0    # Risk score threshold for blackspot classification
-BANGALORE_LAT=12.9716            # Map center latitude
-BANGALORE_LON=77.5946            # Map center longitude
+# From project root
+cd hardware_module_code/simulation_mode
+python hardware_simulator.py --crash-after 10
+
+# This sends telemetry to http://localhost:8000/api/telemetry/hardware
+# Same pipeline as the demo simulator and mobile sensor data
 ```
+
+**No real hardware required.** The simulation mode generates identical telemetry packets.
 
 ---
 
-## 🤝 Contributing
+## 🔍 Troubleshooting
 
-This is a hackathon prototype. For production deployment:
-1. Replace mock notification engine with real SMS gateway
-2. Integrate real vehicle sensor APIs
-3. Connect to 108 ambulance service
-4. Add authentication and authorization
-5. Implement proper database migrations with Alembic
+### Port Already In Use
+
+```
+Error: [WinError 10048] Address already in use
+```
+
+The startup script automatically kills existing processes on ports 8000 and 5173. If issues persist:
+
+```bash
+# Manual kill
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+netstat -ano | findstr :5173
+taskkill /PID <PID> /F
+```
+
+### Backend Fails to Start
+
+```bash
+# Try starting manually
+cd backend
+.venv\Scripts\activate
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### Frontend Fails to Start
+
+```bash
+# Check node_modules exists
+cd frontend
+dir node_modules
+
+# If missing, reinstall
+npm install
+
+# Start manually
+npm run dev
+```
+
+### OSRM Routing Fails
+
+The system uses the public OSRM server at `router.project-osrm.org`. If it's unreachable, it falls back to straight-line interpolation automatically. The system will still work.
+
+### Overpass API (OSM Data) Fails
+
+If the Overpass API is unreachable, the risk engine falls back to a hardcoded set of Bangalore's major road axes (Bellary Road, Outer Ring Road, Hosur Road, etc.). These are real road alignments, not random lines.
+
+---
+
+## 🗺️ Future Extensions
+
+### Phase 2 (Production-Ready)
+
+- **Real IoT Integration**: Deploy `hardware_module_code/main.cpp` on actual Pico 2W hardware
+- **Database Persistence**: Switch from in-memory stores to PostgreSQL + PostGIS
+- **Authentication**: Add JWT-based auth for command center and admin roles
+- **Traffic Data**: Integrate real-time traffic API for ETA calculation
+- **SMS Gateway**: Replace mock notification with MSG91/Twilio integration
+- **108 Ambulance API**: Connect to government emergency services
+
+### Phase 3 (City-Scale)
+
+- **Multi-City Support**: Parameterize for any Indian city with OSM data
+- **NHAI Integration**: Highway-specific monitoring and response
+- **Machine Learning**: Train crash prediction models on real accident data
+- **Mobile App**: React Native app with actual hardware sensor access
+- **Drone Dispatch**: Coordinate drone delivery of AEDs and supplies
+- **Insurance API**: Automated claim filing and accident reporting
+
+### Phase 4 (Government Integration)
+
+- **State Command Center**: Multi-district coordination
+- **Aarogya Setu Integration**: Health data for patient history
+- **Traffic Signal Control**: Emergency vehicle preemption
+- **Road Maintenance Alerts**: Send infrastructure alerts to PWD/BBMP
 
 ---
 
 ## 📄 License
 
-MIT License — Built for the Road Safety Hackathon
+**MIT License** — Built for the Road Safety Hackathon
 
 ---
 
-*Built with ❤️ for India's road safety | Data sources: MoRTH, NCRB, data.gov.in*
+<div align="center">
+
+**Built with ❤️ for India's road safety**
+
+*Data sources: MoRTH 2022, NCRB, data.gov.in*
+
+---
+
+[⬆ Back to Top](#-roadsos--ai-powered-emergency-response-intelligence-platform)
+
+</div>
