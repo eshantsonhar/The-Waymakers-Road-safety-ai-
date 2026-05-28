@@ -20,7 +20,7 @@
  *   Green  = selected hospital
  *   Yellow = risk heatmap (high risk)
  */
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import {
   MapContainer, TileLayer, Marker, Popup,
   Polyline, CircleMarker, useMap, Tooltip,
@@ -395,18 +395,51 @@ function MapLegend() {
       <div style={{ color: '#e8eaf6', fontWeight: 'bold', marginBottom: '6px', letterSpacing: '0.1em' }}>
         MAP LEGEND
       </div>
+      {/* POINT LAYERS */}
+      <div style={{ color: '#4a5568', fontSize: '9px', marginTop: '4px', marginBottom: '3px', borderTop: '1px solid #1e2d4a', paddingTop: '4px' }}>
+        POINT LAYERS
+      </div>
       {[
-        { color: '#ff2d55', label: 'Ambulance → Scene route' },
-        { color: '#00d4ff', label: 'Scene → Hospital route' },
-        { color: '#ff6600', label: 'Accident location' },
-        { color: '#00d4ff', label: 'Ambulance (en route)' },
-        { color: '#bf5af2', label: 'Ambulance (transporting)' },
-        { color: '#30d158', label: 'Selected hospital' },
-        { color: '#FF6600', label: 'High-risk road segment' },
+        { color: '#ff6600', label: 'Accident location', icon: '●' },
+        { color: '#00d4ff', label: 'Ambulance (en route)', icon: '◆' },
+        { color: '#bf5af2', label: 'Ambulance (transporting)', icon: '◆' },
+        { color: '#30d158', label: 'Hospital (selected)', icon: '■' },
+        { color: '#1a7a3a', label: 'Hospital (available)', icon: '■' },
+      ].map(({ color, label, icon }) => (
+        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
+          <div style={{ width: '10px', textAlign: 'center', color, fontSize: '12px', flexShrink: 0 }}>{icon}</div>
+          <span>{label}</span>
+        </div>
+      ))}
+
+      {/* LINE LAYERS */}
+      <div style={{ color: '#4a5568', fontSize: '9px', marginTop: '4px', marginBottom: '3px', borderTop: '1px solid #1e2d4a', paddingTop: '4px' }}>
+        ROUTE LAYERS
+      </div>
+      {[
+        { color: '#ff2d55', label: 'Ambulance → Scene', dash: false },
+        { color: '#00d4ff', label: 'Scene → Hospital', dash: false },
       ].map(({ color, label }) => (
         <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '3px' }}>
           <div style={{ width: '16px', height: '3px', background: color, borderRadius: '2px', flexShrink: 0 }} />
           <span>{label}</span>
+        </div>
+      ))}
+
+      {/* RISK LAYERS */}
+      <div style={{ color: '#4a5568', fontSize: '9px', marginTop: '4px', marginBottom: '3px', borderTop: '1px solid #1e2d4a', paddingTop: '4px' }}>
+        ROAD RISK SEGMENTS
+      </div>
+      {[
+        { color: '#FF0000', label: 'Extreme risk (80-100)' },
+        { color: '#FF6600', label: 'High risk (60-80)' },
+        { color: '#FFCC00', label: 'Medium risk (40-60)' },
+        { color: '#FFFF00', label: 'Low risk (20-40)' },
+        { color: '#AAFF00', label: 'Minimal risk (<20)' },
+      ].map(({ color, label }) => (
+        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+          <div style={{ width: '16px', height: '3px', background: color, borderRadius: '2px', flexShrink: 0 }} />
+          <span style={{ fontSize: '9px' }}>{label}</span>
         </div>
       ))}
       <div style={{ marginTop: '6px', fontSize: '9px', color: '#4a5568', borderTop: '1px solid #1e2d4a', paddingTop: '4px' }}>

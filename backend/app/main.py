@@ -82,6 +82,7 @@ from app.api.ambulances import router as ambulances_router
 from app.api.risk import router as risk_router
 from app.api.analytics import router as analytics_router
 from app.api.routes import router as routes_router
+from app.api.telemetry import router as telemetry_router
 
 app.include_router(detection_router)
 app.include_router(incidents_router)
@@ -90,6 +91,7 @@ app.include_router(ambulances_router)
 app.include_router(risk_router)
 app.include_router(analytics_router)
 app.include_router(routes_router)
+app.include_router(telemetry_router)
 
 
 

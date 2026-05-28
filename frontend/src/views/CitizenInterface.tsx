@@ -3,9 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { useApi } from '../hooks/useApi';
 import { SeverityBadge } from '../components/SeverityBadge';
+import { MobileTelemetryDashboard } from '../mobile/MobileTelemetryDashboard';
 import {
   AlertTriangle, Phone, MapPin, Clock, Wifi, WifiOff,
-  Activity, Building2, Ambulance, CheckCircle, X, Zap
+  Activity, Building2, Ambulance, CheckCircle, X, Zap, Smartphone
 } from 'lucide-react';
 
 type DetectionState = 'monitoring' | 'alert' | 'confirmed' | 'sos_active';

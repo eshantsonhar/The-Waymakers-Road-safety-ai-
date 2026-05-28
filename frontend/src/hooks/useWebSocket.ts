@@ -267,6 +267,19 @@ export function useWebSocket() {
         break;
       }
 
+      case 'HARDWARE_TELEMETRY': {
+        const telemetry = payload as {
+          device_id: string;
+          latitude: number;
+          longitude: number;
+          speed_kmh: number;
+          crash_detected?: boolean;
+          sos_active?: boolean;
+        };
+        // Log hardware telemetry — can be used to add hardware markers to the map
+        break;
+      }
+
       case 'EMERGENCY_ALERT': {
         const alert = payload as { title: string; message: string; severity: string };
         addNotification({
