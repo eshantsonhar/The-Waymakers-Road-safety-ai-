@@ -2,7 +2,8 @@ import { useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
 
-const API_BASE = 'http://localhost:8000';
+const API_HOST = window.location.hostname || 'localhost';
+const API_BASE = `http://${API_HOST}:8000`;
 
 const api = axios.create({
   baseURL: API_BASE,

@@ -13,8 +13,28 @@
 .qodo/**
 **/.qodo/
 **/.qodo/**
+.cursor/
+.cursor/**
+.cursor-cache/
+.cursor-cache/**
+.codex/
+.codex/**
+.agents/
+.agents/**
 prompt_logs/
+prompt-history/
+prompt_histories/
+prompt-history.*
+prompt_history.*
+prompts/history/
 agent_workspace/
+agent-scratch/
+agent_scratch/
+agent-scratchpads/
+agent_scratchpads/
+planning/
+plans/generated/
+*.scratch
 *.kiro
 
 # ============================================================
@@ -184,6 +204,7 @@ pids/
 .Trashes
 ehthumbs.db
 Thumbs.db
+Desktop.ini
 desktop.ini
 $RECYCLE.BIN/
 *.lnk
@@ -221,6 +242,34 @@ datasets/raw/
 datasets/processed/
 *.csv.gz
 *.parquet
+
+# ============================================================
+# Generated RoadSoS Runtime Data
+# ============================================================
+simulation_snapshots/
+simulation-snapshots/
+route_caches/
+route-cache/
+websocket_dumps/
+websocket-dumps/
+exported_reports/
+generated_reports/
+reports/generated/
+runtime/
+runtime-data/
+*.routes.json
+*.snapshot.json
+*.wsdump
+*.har
+
+# ============================================================
+# KiCad Local/Generated Files
+# ============================================================
+**/.history/
+**/*-backups/
+**/*.kicad_prl
+**/*.kicad_sch-bak
+**/*.kicad_pcb-bak
 
 # ============================================================
 # Temporary Files

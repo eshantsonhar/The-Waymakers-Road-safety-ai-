@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from typing import Optional
 import os
 
@@ -20,7 +21,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
     # CORS
-    ALLOWED_ORIGINS: list = ["http://localhost:5173", "http://localhost:3000", "http://localhost:80"]
+    ALLOWED_ORIGINS: list = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:80",
+        "http://127.0.0.1:80",
+    ]
 
     # WebSocket
     WS_HEARTBEAT_INTERVAL: int = 30
@@ -48,6 +56,17 @@ class Settings(BaseSettings):
 
     # Risk prediction
     BLACKSPOT_RISK_THRESHOLD: float = 70.0
+
+    @field_validator("DEBUG", mode="before")
+    @classmethod
+    def parse_debug_flag(cls, value):
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"release", "prod", "production", "false", "0", "no", "off"}:
+                return False
+            if normalized in {"debug", "dev", "development", "true", "1", "yes", "on"}:
+                return True
+        return value
 
     class Config:
         env_file = ".env"

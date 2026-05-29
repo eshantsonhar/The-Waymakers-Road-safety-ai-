@@ -174,11 +174,27 @@ function Validate-Environment {
     Write-Log -Level STEP -Message "1/7 Validate environment"
     $script:PythonExe = Resolve-RequiredCommand -Name "python" -InstallHint "Install Python 3.11+ and add it to PATH."
     $script:NpmExe = Resolve-RequiredCommand -Name "npm.cmd" -InstallHint "Install Node.js 20+ and add it to PATH."
-    Resolve-RequiredCommand -Name "node" -InstallHint "Install Node.js 20+ and add it to PATH." | Out-Null
+    $nodeExe = Resolve-RequiredCommand -Name "node" -InstallHint "Install Node.js 20+ and add it to PATH."
 
-    Invoke-CheckedCommand -Name "python --version" -FilePath $script:PythonExe -Arguments @("--version") | Out-Null
-    Invoke-CheckedCommand -Name "node --version" -FilePath (Resolve-RequiredCommand -Name "node" -InstallHint "Install Node.js.") -Arguments @("--version") | Out-Null
+    $pythonVersion = Invoke-CheckedCommand -Name "python --version" -FilePath $script:PythonExe -Arguments @("--version")
+    $nodeVersion = Invoke-CheckedCommand -Name "node --version" -FilePath $nodeExe -Arguments @("--version")
     Invoke-CheckedCommand -Name "npm --version" -FilePath $script:NpmExe -Arguments @("--version") | Out-Null
+
+    $pythonText = ($pythonVersion.Output -join " ")
+    if ($pythonText -notmatch "Python\s+(\d+)\.(\d+)") {
+        throw ("Could not determine Python version from: {0}" -f $pythonText)
+    }
+    if ([int]$Matches[1] -lt 3 -or ([int]$Matches[1] -eq 3 -and [int]$Matches[2] -lt 11)) {
+        throw ("Python 3.11+ is required. Found: {0}" -f $pythonText)
+    }
+
+    $nodeText = ($nodeVersion.Output -join " ")
+    if ($nodeText -notmatch "v(\d+)\.") {
+        throw ("Could not determine Node.js version from: {0}" -f $nodeText)
+    }
+    if ([int]$Matches[1] -lt 20) {
+        throw ("Node.js 20+ is required. Found: {0}" -f $nodeText)
+    }
 }
 
 function Validate-ProjectStructure {
@@ -206,9 +222,27 @@ function Configure-BackendEnvironment {
     Write-Log -Level STEP -Message "3/7 Configure backend environment"
     $envFile = Join-Path $script:BackendDir ".env"
     $envExample = Join-Path $script:BackendDir ".env.example"
+    $requiredOriginsValue = '["http://localhost:5173","http://127.0.0.1:5173","http://localhost:3000","http://127.0.0.1:3000","http://localhost:80","http://127.0.0.1:80"]'
 
     if (Test-Path -LiteralPath $envFile) {
         Write-Log -Level OK -Message "backend\.env already exists"
+        $content = @(Get-Content -LiteralPath $envFile)
+        $originLine = $content | Where-Object { $_ -match "^\s*ALLOWED_ORIGINS\s*=" } | Select-Object -First 1
+        if (-not $originLine -or $originLine -notmatch "127\.0\.0\.1:5173") {
+            $updated = $false
+            for ($i = 0; $i -lt $content.Count; $i++) {
+                if ($content[$i] -match "^\s*ALLOWED_ORIGINS\s*=") {
+                    $content[$i] = "ALLOWED_ORIGINS={0}" -f $requiredOriginsValue
+                    $updated = $true
+                    break
+                }
+            }
+            if (-not $updated) {
+                $content += "ALLOWED_ORIGINS={0}" -f $requiredOriginsValue
+            }
+            Set-Content -LiteralPath $envFile -Value $content -Encoding ASCII
+            Write-Log -Level OK -Message "Updated backend\.env CORS origins for local launcher hosts"
+        }
         return
     }
 
@@ -225,7 +259,7 @@ function Configure-BackendEnvironment {
         "DEMO_HOSPITAL_UPDATE_INTERVAL_SECONDS=15",
         "BANGALORE_LAT=12.9716",
         "BANGALORE_LON=77.5946",
-        "ALLOWED_ORIGINS=[""*""]",
+        ("ALLOWED_ORIGINS={0}" -f $requiredOriginsValue),
         "DATABASE_URL=sqlite:///./roadsos.db",
         "WS_HEARTBEAT_INTERVAL=30",
         "CRASH_CONFIRM_THRESHOLD=0.85",
@@ -289,6 +323,7 @@ function Ensure-PythonBackend {
     }
 
     Write-Log -Level INFO -Message "Installing backend requirements"
+    Invoke-CheckedCommand -Name "pip bootstrap" -FilePath $script:VenvPython -Arguments @("-m", "ensurepip", "--upgrade") -WorkingDirectory $script:BackendDir -AllowFailure | Out-Null
     Invoke-CheckedCommand -Name "pip install requirements" -FilePath $script:VenvPython -Arguments @("-m", "pip", "install", "-r", "requirements.txt", "--default-timeout", "180", "--disable-pip-version-check") -WorkingDirectory $script:BackendDir | Out-Null
     Invoke-CheckedCommand -Name "python import verify" -FilePath $script:VenvPython -Arguments @("-c", "import fastapi, uvicorn, httpx, websockets") -WorkingDirectory $script:BackendDir | Out-Null
     Write-Log -Level OK -Message "Backend dependencies are ready"
@@ -298,17 +333,19 @@ function Ensure-Frontend {
     Write-Log -Level STEP -Message "5/7 Prepare frontend"
     $nodeModules = Join-Path $script:FrontendDir "node_modules"
     $viteJs = Join-Path $script:FrontendDir "node_modules\vite\bin\vite.js"
+    $lockFile = Join-Path $script:FrontendDir "package-lock.json"
+    $installCommand = if (Test-Path -LiteralPath $lockFile) { "ci" } else { "install" }
 
     if (-not (Test-Path -LiteralPath $nodeModules)) {
         Write-Log -Level INFO -Message "Installing frontend dependencies"
-        Invoke-CheckedCommand -Name "npm install" -FilePath $script:NpmExe -Arguments @("install", "--no-fund", "--no-audit", "--legacy-peer-deps") -WorkingDirectory $script:FrontendDir | Out-Null
+        Invoke-CheckedCommand -Name ("npm {0}" -f $installCommand) -FilePath $script:NpmExe -Arguments @($installCommand, "--no-fund", "--no-audit", "--legacy-peer-deps") -WorkingDirectory $script:FrontendDir | Out-Null
     } else {
         Write-Log -Level OK -Message "node_modules already exists"
     }
 
     if (-not (Test-Path -LiteralPath $viteJs)) {
-        Write-Log -Level WARN -Message "Vite package not found; running npm install again"
-        Invoke-CheckedCommand -Name "npm install retry" -FilePath $script:NpmExe -Arguments @("install", "--no-fund", "--no-audit", "--legacy-peer-deps") -WorkingDirectory $script:FrontendDir | Out-Null
+        Write-Log -Level WARN -Message ("Vite package not found; running npm {0} again" -f $installCommand)
+        Invoke-CheckedCommand -Name ("npm {0} retry" -f $installCommand) -FilePath $script:NpmExe -Arguments @($installCommand, "--no-fund", "--no-audit", "--legacy-peer-deps") -WorkingDirectory $script:FrontendDir | Out-Null
     }
 
     if (-not (Test-Path -LiteralPath $viteJs)) {
