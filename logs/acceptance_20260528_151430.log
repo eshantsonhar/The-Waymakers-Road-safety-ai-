@@ -1,0 +1,26 @@
+﻿[2026-05-28 15:14:30.584] [INFO] Log file: C:\Eshant_Sonhar\Road Safety Hackathon\logs\acceptance_20260528_151430.log
+[2026-05-28 15:14:30.615] [INFO] Root: C:\Eshant_Sonhar\Road Safety Hackathon
+[2026-05-28 15:14:30.615] [INFO] PowerShell: 5.1.26100.8457
+[2026-05-28 15:14:30.615] [STEP] 1/7 Validate environment
+[2026-05-28 15:14:30.634] [OK] Found python: C:\Users\eshan\AppData\Local\Programs\Python\Python311\python.exe
+[2026-05-28 15:14:30.637] [OK] Found npm.cmd: C:\Program Files\nodejs\npm.cmd
+[2026-05-28 15:14:30.640] [OK] Found node: C:\Program Files\nodejs\node.exe
+[2026-05-28 15:14:30.685] [OK] Found node: C:\Program Files\nodejs\node.exe
+[2026-05-28 15:14:30.938] [STEP] 2/7 Validate project structure
+[2026-05-28 15:14:30.938] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend
+[2026-05-28 15:14:30.938] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend\requirements.txt
+[2026-05-28 15:14:30.938] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend\app\main.py
+[2026-05-28 15:14:30.949] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend
+[2026-05-28 15:14:30.949] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend\package.json
+[2026-05-28 15:14:30.949] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend\vite.config.ts
+[2026-05-28 15:14:30.949] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\scripts\logger.ps1
+[2026-05-28 15:14:30.949] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\scripts\healthcheck.ps1
+[2026-05-28 15:14:30.949] [STEP] 3/7 Configure backend environment
+[2026-05-28 15:14:30.949] [OK] backend\.env already exists
+[2026-05-28 15:14:30.965] [STEP] 4/7 Prepare Python backend
+[2026-05-28 15:14:30.967] [INFO] Creating Python virtual environment
+[2026-05-28 15:14:48.872] [ERROR] Startup failed: Traceback (most recent call last):
+[2026-05-28 15:14:48.890] [ERROR] Failing location: At C:\Eshant_Sonhar\Road Safety Hackathon\scripts\launcher.ps1:79 char:19
++         $output = & $FilePath @Arguments 2>&1
++                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+[2026-05-28 15:14:48.890] [INFO] Log session ended
