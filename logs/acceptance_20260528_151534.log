@@ -1,0 +1,33 @@
+﻿[2026-05-28 15:15:34.727] [INFO] Log file: C:\Eshant_Sonhar\Road Safety Hackathon\logs\acceptance_20260528_151534.log
+[2026-05-28 15:15:34.739] [INFO] Root: C:\Eshant_Sonhar\Road Safety Hackathon
+[2026-05-28 15:15:34.754] [INFO] PowerShell: 5.1.26100.8457
+[2026-05-28 15:15:34.755] [STEP] 1/7 Validate environment
+[2026-05-28 15:15:34.755] [OK] Found python: C:\Users\eshan\AppData\Local\Programs\Python\Python311\python.exe
+[2026-05-28 15:15:34.766] [OK] Found npm.cmd: C:\Program Files\nodejs\npm.cmd
+[2026-05-28 15:15:34.770] [OK] Found node: C:\Program Files\nodejs\node.exe
+[2026-05-28 15:15:34.803] [OK] Found node: C:\Program Files\nodejs\node.exe
+[2026-05-28 15:15:35.074] [STEP] 2/7 Validate project structure
+[2026-05-28 15:15:35.074] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend
+[2026-05-28 15:15:35.074] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend\requirements.txt
+[2026-05-28 15:15:35.074] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend\app\main.py
+[2026-05-28 15:15:35.082] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend
+[2026-05-28 15:15:35.084] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend\package.json
+[2026-05-28 15:15:35.085] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend\vite.config.ts
+[2026-05-28 15:15:35.087] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\scripts\logger.ps1
+[2026-05-28 15:15:35.089] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\scripts\healthcheck.ps1
+[2026-05-28 15:15:35.091] [STEP] 3/7 Configure backend environment
+[2026-05-28 15:15:35.094] [OK] backend\.env already exists
+[2026-05-28 15:15:35.096] [STEP] 4/7 Prepare Python backend
+[2026-05-28 15:15:35.099] [OK] Virtual environment exists: C:\Eshant_Sonhar\Road Safety Hackathon\backend\.venv
+[2026-05-28 15:15:35.141] [INFO] Installing backend requirements
+[2026-05-28 15:18:45.222] [OK] Backend dependencies are ready
+[2026-05-28 15:18:45.240] [STEP] 5/7 Prepare frontend
+[2026-05-28 15:18:45.244] [OK] node_modules already exists
+[2026-05-28 15:18:45.249] [OK] Frontend dependencies are ready
+[2026-05-28 15:18:45.254] [STEP] 6/7 Start services
+[2026-05-28 15:18:45.254] [STEP] Clearing occupied RoadSoS ports
+[2026-05-28 15:18:49.795] [ERROR] Startup failed: The property 'Count' cannot be found on this object. Verify that the property exists.
+[2026-05-28 15:18:49.795] [ERROR] Failing location: At C:\Eshant_Sonhar\Road Safety Hackathon\scripts\launcher.ps1:165 char:13
++         if ($remaining.Count -gt 0) {
++             ~~~~~~~~~~~~~~~~~~~~~~
+[2026-05-28 15:18:49.795] [INFO] Log session ended

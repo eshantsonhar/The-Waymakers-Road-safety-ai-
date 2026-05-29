@@ -1,0 +1,54 @@
+﻿[2026-05-28 15:22:05.467] [INFO] Log file: C:\Eshant_Sonhar\Road Safety Hackathon\logs\restart_acceptance_20260528_152205.log
+[2026-05-28 15:22:05.487] [INFO] Root: C:\Eshant_Sonhar\Road Safety Hackathon
+[2026-05-28 15:22:05.492] [INFO] PowerShell: 5.1.26100.8457
+[2026-05-28 15:22:05.492] [STEP] 1/7 Validate environment
+[2026-05-28 15:22:05.492] [OK] Found python: C:\Users\eshan\AppData\Local\Programs\Python\Python311\python.exe
+[2026-05-28 15:22:05.503] [OK] Found npm.cmd: C:\Program Files\nodejs\npm.cmd
+[2026-05-28 15:22:05.503] [OK] Found node: C:\Program Files\nodejs\node.exe
+[2026-05-28 15:22:05.534] [OK] Found node: C:\Program Files\nodejs\node.exe
+[2026-05-28 15:22:05.788] [STEP] 2/7 Validate project structure
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend\requirements.txt
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\backend\app\main.py
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend\package.json
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\frontend\vite.config.ts
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\scripts\logger.ps1
+[2026-05-28 15:22:05.788] [OK] Present: C:\Eshant_Sonhar\Road Safety Hackathon\scripts\healthcheck.ps1
+[2026-05-28 15:22:05.804] [STEP] 3/7 Configure backend environment
+[2026-05-28 15:22:05.804] [OK] backend\.env already exists
+[2026-05-28 15:22:05.809] [STEP] Applying backend environment
+[2026-05-28 15:22:05.820] [OK] Applied 24 backend environment variable(s)
+[2026-05-28 15:22:05.830] [STEP] 4/7 Prepare Python backend
+[2026-05-28 15:22:05.832] [OK] Virtual environment exists: C:\Eshant_Sonhar\Road Safety Hackathon\backend\.venv
+[2026-05-28 15:22:06.504] [OK] Core backend packages are installed
+[2026-05-28 15:22:06.513] [STEP] 5/7 Prepare frontend
+[2026-05-28 15:22:06.513] [OK] node_modules already exists
+[2026-05-28 15:22:06.513] [OK] Frontend dependencies are ready
+[2026-05-28 15:22:06.513] [STEP] 6/7 Start services
+[2026-05-28 15:22:06.520] [STEP] Clearing occupied RoadSoS ports
+[2026-05-28 15:22:07.311] [WARN] Stopping python (PID 35280) on port 8000
+[2026-05-28 15:22:07.743] [WARN] Stopping node (PID 4184) on port 5173
+[2026-05-28 15:22:10.629] [OK] Required ports are available
+[2026-05-28 15:22:10.645] [STEP] Starting backend on http://127.0.0.1:8000
+[2026-05-28 15:22:10.677] [OK] Backend process started. PID 7116
+[2026-05-28 15:22:10.677] [INFO] Backend stdout: C:\Eshant_Sonhar\Road Safety Hackathon\logs\backend_stdout.log
+[2026-05-28 15:22:10.688] [INFO] Backend stderr: C:\Eshant_Sonhar\Road Safety Hackathon\logs\backend_stderr.log
+[2026-05-28 15:22:11.724] [WAIT] Waiting for backend: http://127.0.0.1:8000/health
+[2026-05-28 15:22:12.842] [OK] backend is ready after 1.1s (1/45)
+[2026-05-28 15:22:12.852] [STEP] Starting frontend on http://127.0.0.1:5173
+[2026-05-28 15:22:12.864] [OK] Frontend process started. PID 22384
+[2026-05-28 15:22:12.866] [INFO] Frontend stdout: C:\Eshant_Sonhar\Road Safety Hackathon\logs\frontend_stdout.log
+[2026-05-28 15:22:12.869] [INFO] Frontend stderr: C:\Eshant_Sonhar\Road Safety Hackathon\logs\frontend_stderr.log
+[2026-05-28 15:22:13.878] [WAIT] Waiting for frontend: http://127.0.0.1:5173/
+[2026-05-28 15:22:14.084] [OK] frontend is ready after 0.2s (1/45)
+[2026-05-28 15:22:14.094] [STEP] 7/7 Final verification
+[2026-05-28 15:22:14.355] [OK] Backend health: http://127.0.0.1:8000/health
+[2026-05-28 15:22:14.355] [OK] Frontend: http://127.0.0.1:5173/
+[2026-05-28 15:22:14.355] [INFO] Opening browser
+[2026-05-28 15:22:14.496] [OK] RoadSoS is live
+[2026-05-28 15:22:14.496] [OK] Frontend: http://127.0.0.1:5173/
+[2026-05-28 15:22:14.496] [OK] Backend: http://127.0.0.1:8000/health
+[2026-05-28 15:22:14.504] [OK] API docs: http://127.0.0.1:8000/api/docs
+[2026-05-28 15:22:14.505] [INFO] Log file: C:\Eshant_Sonhar\Road Safety Hackathon\logs\restart_acceptance_20260528_152205.log
+[2026-05-28 15:22:14.512] [INFO] Log session ended
